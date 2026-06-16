@@ -3,8 +3,9 @@ import {
   LayoutDashboard, Sparkles, FolderOpen, Play, Hash, FileText, Type,
   Share2, Copy, Download, Trash2, Plus, Loader2, Check, X, Clock,
   Target, Users, Gamepad2, Tag, TrendingUp, MousePointerClick, Radio,
-  ChevronRight, Layers, Wand2, AlertTriangle
+  ChevronRight, Layers, Wand2, AlertTriangle, LogOut
 } from "lucide-react";
+import { projectsKey } from "./auth.js";
 
 /* ------------------------------------------------------------------ */
 /*  Theme                                                             */
@@ -39,7 +40,10 @@ const STYLE = `
 .ct-nav.on{color:var(--text);background:var(--surface);border-color:var(--border2)}
 .ct-nav.on svg{color:var(--violet2)}
 .ct-side-foot{margin-top:auto;padding:12px 10px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px}
-.ct-avatar{width:28px;height:28px;border-radius:50%;background:var(--surface2);border:1px solid var(--border2);display:grid;place-items:center;font-family:var(--disp);font-weight:600;color:var(--text)}
+.ct-avatar{width:28px;height:28px;border-radius:50%;background:var(--surface2);border:1px solid var(--border2);display:grid;place-items:center;font-family:var(--disp);font-weight:600;color:var(--text);flex-shrink:0}
+.ct-usermeta{flex:1;min-width:0}
+.ct-usermeta b{display:block;color:var(--text);font-weight:600;font-size:12.5px}
+.ct-usermeta small{display:block;color:var(--muted);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* main */
 .ct-main{padding:32px 40px 60px;max-width:1180px;width:100%}
@@ -160,11 +164,10 @@ const PLATFORMS = [
   { id: "facebook", label: "Facebook", color: "#5B7BFF" },
 ];
 const PLAT = Object.fromEntries(PLATFORMS.map((p) => [p.id, p]));
-const STORAGE_KEY = "copytube-projects";
 
-function loadProjects() {
+function loadProjects(userId) {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(projectsKey(userId));
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
@@ -482,16 +485,16 @@ function download(name, text) {
 /* ------------------------------------------------------------------ */
 /*  App                                                               */
 /* ------------------------------------------------------------------ */
-export default function CopyTube() {
+export default function CopyTube({ user, onLogout }) {
   const [view, setView] = useState("dashboard");
-  const [projects, setProjects] = useState(loadProjects);
+  const [projects, setProjects] = useState(() => loadProjects(user.id));
   const [activeId, setActiveId] = useState(null);
   const [toast, setToast] = useState("");
   const toastT = useRef(null);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
-  }, [projects]);
+    localStorage.setItem(projectsKey(user.id), JSON.stringify(projects));
+  }, [projects, user.id]);
 
   const ping = (msg) => {
     setToast(msg);
@@ -544,8 +547,14 @@ export default function CopyTube() {
             </div>
           ))}
           <div className="ct-side-foot">
-            <div className="ct-avatar">C</div>
-            <div><div style={{ color: "var(--text)", fontWeight: 600 }}>Criador</div><div style={{ fontSize: 11 }}>Plano Pro</div></div>
+            <div className="ct-avatar">{(user.name || "C").charAt(0).toUpperCase()}</div>
+            <div className="ct-usermeta">
+              <b>{user.name}</b>
+              <small>{user.email}</small>
+            </div>
+            <button className="ct-icobtn" type="button" onClick={onLogout} title="Sair">
+              <LogOut size={15} />
+            </button>
           </div>
         </aside>
 
@@ -554,6 +563,7 @@ export default function CopyTube() {
           {view === "dashboard" && <Dashboard stats={stats} onNew={() => setView("generator")} />}
           {view === "generator" && (
             <Generator
+              ping={ping}
               onDone={(proj) => {
                 setProjects((ps) => [proj, ...ps]);
                 setActiveId(proj.id);
@@ -600,7 +610,7 @@ function Dashboard({ stats, onNew }) {
 }
 
 /* ----------------------------- Generator --------------------------- */
-function Generator({ onDone }) {
+function Generator({ onDone, ping }) {
   const [f, setF] = useState({
     titulo: "",
     tema: "",
