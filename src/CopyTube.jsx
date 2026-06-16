@@ -3,10 +3,9 @@ import {
   LayoutDashboard, Sparkles, FolderOpen, Play, Hash, FileText, Type,
   Share2, Copy, Download, Trash2, Plus, Loader2, Check, X, Clock,
   Target, Users, Gamepad2, Tag, TrendingUp, MousePointerClick, Radio,
-  ChevronRight, Layers, Wand2, AlertTriangle, LogOut,
+  ChevronRight, Layers, Wand2, AlertTriangle,
   Youtube, Instagram, Linkedin, Facebook
 } from "lucide-react";
-import { projectsKey } from "./auth.js";
 
 /* ------------------------------------------------------------------ */
 /*  Theme                                                             */
@@ -189,9 +188,11 @@ function PlatIcon({ id, size = 16, className = "" }) {
   );
 }
 
-function loadProjects(userId) {
+const STORAGE_KEY = "copytube-projects";
+
+function loadProjects() {
   try {
-    const raw = localStorage.getItem(projectsKey(userId));
+    const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
@@ -578,16 +579,16 @@ function download(name, text) {
 /* ------------------------------------------------------------------ */
 /*  App                                                               */
 /* ------------------------------------------------------------------ */
-export default function CopyTube({ user, onLogout }) {
+export default function CopyTube() {
   const [view, setView] = useState("dashboard");
-  const [projects, setProjects] = useState(() => loadProjects(user.id));
+  const [projects, setProjects] = useState(loadProjects);
   const [activeId, setActiveId] = useState(null);
   const [toast, setToast] = useState("");
   const toastT = useRef(null);
 
   useEffect(() => {
-    localStorage.setItem(projectsKey(user.id), JSON.stringify(projects));
-  }, [projects, user.id]);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
+  }, [projects]);
 
   const ping = (msg) => {
     setToast(msg);
@@ -639,14 +640,11 @@ export default function CopyTube({ user, onLogout }) {
             </div>
           ))}
           <div className="ct-side-foot">
-            <div className="ct-avatar">{(user.name || "C").charAt(0).toUpperCase()}</div>
+            <div className="ct-avatar">C</div>
             <div className="ct-usermeta">
-              <b>{user.name}</b>
-              <small>{user.email}</small>
+              <b>Criador</b>
+              <small>CopyTube</small>
             </div>
-            <button className="ct-icobtn" type="button" onClick={onLogout} title="Sair">
-              <LogOut size={15} />
-            </button>
           </div>
         </aside>
 
