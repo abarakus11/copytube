@@ -4,7 +4,7 @@ import {
   Share2, Copy, Download, Trash2, Plus, Loader2, Check, X, Clock,
   Target, Users, Gamepad2, Tag, TrendingUp, MousePointerClick, Radio,
   ChevronRight, Layers, Wand2, AlertTriangle, Pencil, RefreshCw, RotateCcw,
-  Youtube, Instagram, Linkedin, Facebook
+  Youtube, Instagram, Linkedin, Facebook, GalleryHorizontal, ExternalLink
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
@@ -39,6 +39,8 @@ const STYLE = `
 .ct-nav:hover{color:var(--text);background:var(--surface)}
 .ct-nav.on{color:var(--text);background:var(--surface);border-color:var(--border2)}
 .ct-nav.on svg{color:var(--violet2)}
+.ct-nav.ct-ext{text-decoration:none}
+.ct-nav.ct-ext svg:last-child{margin-left:auto;opacity:.45;width:14px;height:14px}
 .ct-side-foot{margin-top:auto;padding:12px 10px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px}
 .ct-avatar{width:28px;height:28px;border-radius:50%;background:var(--surface2);border:1px solid var(--border2);display:grid;place-items:center;font-family:var(--disp);font-weight:600;color:var(--text);flex-shrink:0}
 .ct-usermeta{flex:1;min-width:0}
@@ -769,6 +771,16 @@ export default function CopyTube() {
               <Ico size={17} /> {lbl}
             </div>
           ))}
+          <div className="ct-navlbl">Ferramentas</div>
+          <a
+            className="ct-nav ct-ext"
+            href="https://gerador-carrosseis-delta.vercel.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <GalleryHorizontal size={17} /> Gerador de carrossel
+            <ExternalLink size={14} />
+          </a>
           <div className="ct-navlbl">Conectado</div>
           {PLATFORMS.map((p) => (
             <div key={p.id} className="ct-nav" style={{ cursor: "default" }}>
