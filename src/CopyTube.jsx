@@ -29,11 +29,12 @@ const STYLE = `
 /* shell */
 .ct-shell{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
 .ct-side{background:var(--bg2);border-right:1px solid var(--border);padding:20px 14px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh}
-.ct-brand{display:flex;align-items:center;gap:10px;padding:6px 8px 18px}
-.ct-mark{width:30px;height:30px;border-radius:9px;background:var(--grad);display:grid;place-items:center;box-shadow:0 4px 16px rgba(123,92,255,.4)}
-.ct-mark svg{color:#fff}
-.ct-brand b{font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:-.02em}
-.ct-brand span{color:var(--mag)}
+.ct-brand{display:flex;align-items:center;padding:0 6px 14px}
+.ct-logo{display:block;height:auto;object-fit:contain;max-width:100%}
+.ct-logo-side{width:210px;max-height:120px;object-position:left center}
+.ct-logo-foot{width:32px;height:32px;border-radius:8px;object-fit:cover;object-position:50% 12%;flex-shrink:0;box-shadow:0 2px 10px rgba(123,92,255,.25)}
+.ct-logo-hero{width:min(360px,88vw);margin:0 auto 8px;filter:drop-shadow(0 8px 28px rgba(123,92,255,.2))}
+.ct-logo-mark{width:40px;height:40px;border-radius:10px;object-fit:cover;object-position:50% 12%;box-shadow:0 4px 14px rgba(123,92,255,.35)}
 .ct-navlbl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);padding:14px 10px 6px;font-weight:600}
 .ct-nav{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:9px;color:var(--muted);cursor:pointer;font-weight:500;border:1px solid transparent;transition:.15s}
 .ct-nav:hover{color:var(--text);background:var(--surface)}
@@ -202,6 +203,30 @@ function PlatIcon({ id, size = 16, className = "" }) {
 }
 
 const STORAGE_KEY = "copytube-projects";
+const LOGO_SRC = "/copytube-logo.png";
+const LOGO_WIDTH = 1024;
+
+function BrandLogo({ variant = "side", className = "" }) {
+  const variants = {
+    side: { cls: "ct-logo-side", width: 210, sizes: "210px" },
+    foot: { cls: "ct-logo-foot", width: 32, sizes: "32px" },
+    hero: { cls: "ct-logo-hero", width: 360, sizes: "(max-width: 768px) 280px, 360px" },
+    mark: { cls: "ct-logo-mark", width: 40, sizes: "40px" },
+  };
+  const v = variants[variant] || variants.side;
+  return (
+    <img
+      src={LOGO_SRC}
+      srcSet={`${LOGO_SRC} ${LOGO_WIDTH}w`}
+      sizes={v.sizes}
+      width={v.width}
+      className={`ct-logo ${v.cls} ${className}`.trim()}
+      alt="CopyTube — Roteiros, títulos e copys que geram resultados"
+      decoding="async"
+      loading={variant === "side" || variant === "hero" ? "eager" : "lazy"}
+    />
+  );
+}
 
 function loadProjects() {
   try {
@@ -757,8 +782,7 @@ export default function CopyTube() {
         {/* Sidebar */}
         <aside className="ct-side">
           <div className="ct-brand">
-            <div className="ct-mark"><Play size={15} fill="#fff" /></div>
-            <b>Copy<span>Tube</span></b>
+            <BrandLogo variant="side" />
           </div>
           <div className="ct-navlbl">Espaço</div>
           {[
@@ -788,7 +812,7 @@ export default function CopyTube() {
             </div>
           ))}
           <div className="ct-side-foot">
-            <div className="ct-avatar">C</div>
+            <BrandLogo variant="foot" />
             <div className="ct-usermeta">
               <b>Criador</b>
               <small>CopyTube</small>
@@ -837,6 +861,9 @@ function Dashboard({ stats, onNew }) {
   ];
   return (
     <>
+      <div style={{ textAlign: "center", marginBottom: 28 }}>
+        <BrandLogo variant="hero" />
+      </div>
       <div className="ct-head">
         <div><h1 className="ct-h1">Dashboard</h1><p className="ct-sub">Sua central de produção de conteúdo com IA.</p></div>
         <button className="ct-btn primary" onClick={onNew}><Plus size={16} /> Novo conteúdo</button>
@@ -982,7 +1009,9 @@ function Library({ projects, onOpen, onDup, onDel, onNew }) {
       </div>
       {projects.length === 0 ? (
         <div className="ct-empty">
-          <div className="eico"><FolderOpen size={22} /></div>
+          <div className="eico" style={{ background: "transparent", border: "none" }}>
+            <BrandLogo variant="mark" />
+          </div>
           Nenhum projeto ainda. Gere seu primeiro conteúdo para começar.
         </div>
       ) : projects.map((p) => (
