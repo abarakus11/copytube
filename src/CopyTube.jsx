@@ -600,14 +600,14 @@ function Dashboard({ stats, onNew }) {
 /* ----------------------------- Generator --------------------------- */
 function Generator({ onDone }) {
   const [f, setF] = useState({
-    titulo: "Albion Online — Prata para iniciantes",
-    tema: "Albion Online",
-    jogo: "Albion Online",
-    nicho: "Games / MMORPG",
-    objetivo: "Ensinar iniciantes a ganhar prata do zero",
-    publico: "Jogadores iniciantes de MMORPG, 16–30 anos",
-    duracao: 15,
-    plataformas: ["youtube", "tiktok", "instagram"],
+    titulo: "",
+    tema: "",
+    jogo: "",
+    nicho: "",
+    objetivo: "",
+    publico: "",
+    duracao: 10,
+    plataformas: [],
   });
   const [progress, setProgress] = useState(null); // {roteiro:'active'...}
   const set = (k, v) => setF((s) => ({ ...s, [k]: v }));
@@ -664,7 +664,7 @@ function Generator({ onDone }) {
       <div className="ct-card" style={{ maxWidth: 720 }}>
         <div className="ct-field">
           <label><Tag size={14} /> Título do projeto</label>
-          <input className="ct-input" value={f.titulo} onChange={(e) => set("titulo", e.target.value)} placeholder="Ex.: Albion Online — Prata para iniciantes" />
+          <input className="ct-input" value={f.titulo} onChange={(e) => set("titulo", e.target.value)} placeholder="Ex.: Guia completo para iniciantes" />
         </div>
         <div className="ct-row">
           <div className="ct-field">
