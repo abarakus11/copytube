@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "hooks": {
+    "stop": [
+      {
+        "command": "powershell -ExecutionPolicy Bypass -File .cursor/hooks/push-copytube.ps1"
+      }
+    ],
+    "afterFileEdit": [
+      {
+        "command": "powershell -ExecutionPolicy Bypass -File .cursor/hooks/push-copytube.ps1",
+        "matcher": "src/|vite\\.config|package\\.json|index\\.html|README|\\.cursor/"
+      }
+    ]
+  }
+}

@@ -5,6 +5,5 @@ dist
 .env
 .env.*
 !.env.example
-.cursor
 *.log
 .cursor/hooks/*.log

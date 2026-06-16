@@ -1,0 +1,29 @@
+---
+description: Deploy automático — CopyTube (GitHub)
+globs: src/**,vite.config.js,package.json,index.html,README.md,.cursor/**
+alwaysApply: false
+---
+
+# Deploy automático — CopyTube
+
+Repositório: `https://github.com/abarakus11/copytube`
+
+## Sempre após alterar o projeto
+
+Execute: `powershell -ExecutionPolicy Bypass -File scripts/sync-and-deploy-copytube.ps1`
+
+## Hooks Cursor (automático)
+
+- **stop**: ao terminar cada resposta do agente → commit + push
+- **afterFileEdit**: ao salvar arquivos do app → commit + push
+
+## Regra para o agente
+
+Sempre que alterar arquivos do CopyTube (`src/`, `vite.config.js`, `package.json`, etc.):
+
+1. Salve as alterações
+2. Execute: `powershell -ExecutionPolicy Bypass -File scripts/sync-and-deploy-copytube.ps1`
+3. Não deixe mudanças só locais
+
+Não usar `git push --force` em `main` sem pedido explícito do usuário.
+Não commitar `.env` (contém chaves de API).
