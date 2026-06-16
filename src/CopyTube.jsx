@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Sparkles, FolderOpen, Play, Hash, FileText, Type,
   Share2, Copy, Download, Trash2, Plus, Loader2, Check, X, Clock,
   Target, Users, Gamepad2, Tag, TrendingUp, MousePointerClick, Radio,
-  ChevronRight, Layers, Wand2, AlertTriangle,
+  ChevronRight, Layers, Wand2, AlertTriangle, Pencil, RefreshCw, RotateCcw,
   Youtube, Instagram, Linkedin, Facebook
 } from "lucide-react";
 
@@ -154,6 +154,17 @@ const STYLE = `
 .ct-banner{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:10px;background:rgba(255,91,110,.1);border:1px solid rgba(255,91,110,.3);color:#ffb3bc;font-size:13px;margin-bottom:18px}
 .ct-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:11px 18px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 12px 40px rgba(0,0,0,.5);display:flex;align-items:center;gap:9px;z-index:99}
 .ct-sectlbl{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:600;margin:0 0 12px}
+.ct-platswitch{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:18px}
+.ct-platswitch-lbl{font-size:12px;color:var(--muted);font-weight:500;margin-right:4px}
+.ct-platbadge{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:#2ed573;background:rgba(46,213,115,.1);border:1px solid rgba(46,213,115,.25);padding:4px 10px;border-radius:20px;margin-bottom:14px}
+.ct-editpanel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;max-width:760px}
+.ct-editpanel h3{font-family:var(--disp);font-size:16px;font-weight:600;margin:0 0 4px}
+.ct-editpanel .ct-sub{margin-bottom:16px}
+.ct-regenpick{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.ct-regenpick label{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);cursor:pointer;padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg2)}
+.ct-regenpick input{accent-color:var(--violet)}
+.ct-editactions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.ct-focuscard{border-color:rgba(123,92,255,.35)!important;background:rgba(123,92,255,.06)!important;margin-bottom:16px}
 @media(max-width:820px){.ct-shell{grid-template-columns:1fr}.ct-side{display:none}.ct-main{padding:24px 18px 60px}.ct-row{grid-template-columns:1fr}}
 `;
 
@@ -527,6 +538,131 @@ async function runGeneration(f, onStep, onMode) {
   return out;
 }
 
+async function runStep(stepId, f) {
+  const tasks = {
+    roteiro: () =>
+      callAI(
+        "Você é roteirista profissional de vídeos para redes sociais e copywriter de resposta direta. Escreva com linguagem natural de fala, ganchos fortes e tom adequado ao público. Responda SOMENTE com JSON minificado válido, sem markdown e sem texto fora do JSON.",
+        `${ctx(f)}\n\nGere o roteiro em português do Brasil para ${f.duracao} minutos.\n\nREGRAS OBRIGATÓRIAS:\n- Divida em 4 a 6 blocos sequenciais com tempos contínuos de 0:00 até o fim do vídeo.\n- Cada bloco precisa de título DIFERENTE e fala ÚNICA (2 a 4 frases em tom de fala ao câmera).\n- Progressão narrativa: problema → passo a passo → estratégia → armadilhas → prova → plano de ação.\n- NUNCA repita a mesma frase, parágrafo ou ideia em blocos diferentes.\n- O gancho deve prender nos primeiros 5 segundos; o CTA deve pedir like, inscrição e comentário.\n\nFormato:\n{"gancho":"...","introducao":"...","blocos":[{"tempo":"0:00 – 3:00","titulo":"...","fala":"..."}],"cta":"..."}`
+      ),
+    titulos: () =>
+      callAI(
+        "Você é especialista em títulos virais e SEO para vídeo. Responda SOMENTE com JSON minificado válido, sem markdown.",
+        `${ctx(f)}\n\nGere títulos em português. 6 por categoria. seo/eng/ctr são números 0-100 (potencial estimado). Formato:\n{"virais":[{"t":"...","seo":80,"eng":90,"ctr":85}],"seo":[...6...],"ctr":[...6...]}`
+      ),
+    hashtags: () =>
+      callAI(
+        "Você é estrategista de hashtags para redes sociais. Responda SOMENTE com JSON minificado válido, sem markdown.",
+        `${ctx(f)}\n\nGere hashtags (com #). Formato:\n{"top":["#..."],"nicho":["#..."],"virais":["#..."],"plataformas":{"youtube":["#..."],"tiktok":["#..."],"instagram":["#..."]}}`
+      ),
+    descricoes: () => {
+      const keys = f.plataformas.join(", ");
+      return callAI(
+        "Você é copywriter especialista em adaptar conteúdo às características de cada rede social: YouTube (descrição longa, capítulos, SEO), TikTok (curto, gírias, trends), Instagram (emocional, CTA forte), LinkedIn (profissional, autoridade), Facebook (engajamento e compartilhamento). Responda SOMENTE com JSON minificado válido, sem markdown.",
+        `${ctx(f)}\n\nGere uma descrição para CADA uma destas plataformas: ${keys}. Respeite o estilo de cada uma. Use \\n para quebras de linha. Formato (inclua só as chaves pedidas):\n{${f.plataformas.map((p) => `"${p}":"..."`).join(",")}}`
+      );
+    },
+  };
+  try {
+    const raw = await tasks[stepId]();
+    return stepId === "roteiro" ? normalizeRoteiro(raw, f) : raw;
+  } catch {
+    const local = generateLocal(stepId, f);
+    return stepId === "roteiro" ? normalizeRoteiro(local, f) : local;
+  }
+}
+
+const PLAT_TITLE_ORDER = {
+  youtube: ["seo", "ctr", "virais"],
+  tiktok: ["virais", "ctr", "seo"],
+  instagram: ["ctr", "virais", "seo"],
+  linkedin: ["seo", "virais", "ctr"],
+  facebook: ["virais", "ctr", "seo"],
+};
+
+const PLAT_TITLE_HINT = {
+  youtube: "SEO e retenção longa",
+  tiktok: "viral e curto",
+  instagram: "clique e salvamento",
+  linkedin: "autoridade profissional",
+  facebook: "compartilhamento",
+};
+
+function shorten(text, max) {
+  if (!text || text.length <= max) return text;
+  const cut = text.slice(0, max);
+  const sp = cut.lastIndexOf(" ");
+  return (sp > max * 0.55 ? cut.slice(0, sp) : cut) + "…";
+}
+
+function adaptRoteiroForPlatform(roteiro, f, plat) {
+  if (!roteiro) return roteiro;
+  const tema = f.tema || f.titulo;
+  const base = { ...roteiro, blocos: (roteiro.blocos || []).map((b) => ({ ...b })) };
+  if (plat === "youtube") return base;
+  if (plat === "tiktok") {
+    return {
+      ...base,
+      gancho: shorten(base.gancho, 95) + " 🔥",
+      introducao: shorten(base.introducao, 85),
+      blocos: base.blocos.slice(0, 3).map((b) => ({ ...b, titulo: shorten(b.titulo, 42), fala: shorten(b.fala, 130) })),
+      cta: "Salva + segue pra não perder! " + shorten(base.cta, 70),
+    };
+  }
+  if (plat === "instagram") {
+    return {
+      ...base,
+      blocos: base.blocos.map((b) => ({ ...b, fala: shorten(b.fala, 190) })),
+      cta: (base.cta || "") + " Salva esse reel e marca quem precisa ver! 💾",
+    };
+  }
+  if (plat === "linkedin") {
+    return {
+      ...base,
+      gancho: (base.gancho || "").replace(/^Fala!/i, "Olá,"),
+      introducao: `Compartilho aprendizados práticos sobre ${tema}. ${base.introducao || ""}`,
+      cta: "O que você achou? Deixe sua experiência nos comentários.",
+    };
+  }
+  if (plat === "facebook") {
+    return {
+      ...base,
+      cta: `Curte e compartilha com quem precisa! ${base.cta || ""}`,
+      blocos: base.blocos.map((b, i) =>
+        i === base.blocos.length - 1 ? { ...b, fala: b.fala + " Comenta aí: qual parte te ajudou mais?" } : b
+      ),
+    };
+  }
+  return base;
+}
+
+function adaptForPlatform(content, f, platId) {
+  if (!content || !platId) return content;
+  return {
+    ...content,
+    roteiro: adaptRoteiroForPlatform(content.roteiro, f, platId),
+    titulos: content.titulos ? { ...content.titulos, _order: PLAT_TITLE_ORDER[platId], _hint: PLAT_TITLE_HINT[platId] } : null,
+    hashtags: content.hashtags
+      ? { ...content.hashtags, _focusPlat: platId, _focusTags: content.hashtags.plataformas?.[platId] || content.hashtags.top || [] }
+      : null,
+    descricoes: content.descricoes?.[platId] ? { [platId]: content.descricoes[platId] } : content.descricoes,
+    _platform: platId,
+  };
+}
+
+function projectFields(p) {
+  return {
+    titulo: p.titulo || "",
+    tema: p.tema || "",
+    jogo: p.jogo || "",
+    nicho: p.nicho || "",
+    duracao: p.duracao || 10,
+    objetivo: p.objetivo || "",
+    publico: p.publico || "",
+    plataformas: p.plataformas || [],
+  };
+}
+
 /* ------------------------------------------------------------------ */
 /*  Small UI helpers                                                  */
 /* ------------------------------------------------------------------ */
@@ -663,7 +799,14 @@ export default function CopyTube() {
             />
           )}
           {view === "library" && <Library projects={projects} onOpen={openProject} onDup={dupProject} onDel={removeProject} onNew={() => setView("generator")} />}
-          {view === "results" && active && <Results p={active} copy={copy} ping={ping} />}
+          {view === "results" && active && (
+            <Results
+              p={active}
+              copy={copy}
+              ping={ping}
+              onUpdate={(patch) => setProjects((ps) => ps.map((x) => (x.id === active.id ? { ...x, ...patch } : x)))}
+            />
+          )}
           {view === "results" && !active && <div className="ct-empty">Selecione um projeto na biblioteca.</div>}
         </main>
       </div>
@@ -856,16 +999,84 @@ function Library({ projects, onOpen, onDup, onDel, onNew }) {
 }
 
 /* ----------------------------- Results ----------------------------- */
-function Results({ p, copy, ping }) {
-  const c = p.content || {};
+function Results({ p, copy, ping, onUpdate }) {
+  const [tab, setTab] = useState(() => {
+    const c = p.content || {};
+    return STEPS.find((s) => c[s.id])?.id || "roteiro";
+  });
+  const [activePlat, setActivePlat] = useState(p.activePlatform || p.plataformas?.[0] || "youtube");
+  const [editOpen, setEditOpen] = useState(false);
+  const [editFields, setEditFields] = useState(() => projectFields(p));
+  const [regenPick, setRegenPick] = useState({ roteiro: false, titulos: false, hashtags: false, descricoes: false });
+  const [regenLoading, setRegenLoading] = useState(false);
+
+  useEffect(() => {
+    setEditFields(projectFields(p));
+    setActivePlat(p.activePlatform || p.plataformas?.[0] || "youtube");
+  }, [p.id]);
+
+  const c = useMemo(() => adaptForPlatform(p.content || {}, p, activePlat), [p.content, p, activePlat]);
+
   const TABS = [
     { id: "roteiro", label: "Roteiro", icon: Play, on: !!c.roteiro },
     { id: "titulos", label: "Títulos", icon: Type, on: !!c.titulos },
     { id: "hashtags", label: "Hashtags", icon: Hash, on: !!c.hashtags },
     { id: "descricoes", label: "Descrições", icon: FileText, on: !!c.descricoes },
   ];
-  const first = TABS.find((t) => t.on)?.id || "roteiro";
-  const [tab, setTab] = useState(first);
+
+  const setField = (k, v) => setEditFields((s) => ({ ...s, [k]: v }));
+  const togglePlatEdit = (id) =>
+    setEditFields((s) => ({
+      ...s,
+      plataformas: s.plataformas.includes(id) ? s.plataformas.filter((x) => x !== id) : [...s.plataformas, id],
+    }));
+
+  const pickPlatform = (id) => {
+    setActivePlat(id);
+    onUpdate({ activePlatform: id });
+    ping(`Modo ${PLAT[id]?.label} — conteúdo adaptado`);
+  };
+
+  const saveMeta = () => {
+    onUpdate(editFields);
+    ping("Alterações salvas — conteúdo original mantido");
+  };
+
+  const restoreVersion = () => {
+    const hist = p.contentHistory || [];
+    if (!hist.length) return;
+    const last = hist[hist.length - 1];
+    onUpdate({ content: last.content, contentHistory: hist.slice(0, -1) });
+    ping("Versão anterior restaurada");
+  };
+
+  const regenerate = async () => {
+    const steps = STEPS.filter((s) => regenPick[s.id]).map((s) => s.id);
+    if (!steps.length) {
+      ping("Marque ao menos uma seção para regerar");
+      return;
+    }
+    setRegenLoading(true);
+    const backup = { content: p.content, savedAt: Date.now() };
+    const history = [...(p.contentHistory || []), backup].slice(-5);
+    const f = { ...p, ...editFields };
+    const newContent = { ...p.content };
+    for (const stepId of steps) {
+      newContent[stepId] = await runStep(stepId, f);
+    }
+    onUpdate({ ...editFields, content: newContent, contentHistory: history });
+    setRegenLoading(false);
+    setEditOpen(false);
+    ping("Seções atualizadas — versão anterior guardada");
+  };
+
+  const titleSections = c.titulos?._order
+    ? c.titulos._order.map((k) => [k, k === "virais" ? "Virais" : k === "seo" ? "SEO" : "Alta CTR", k === c.titulos._order[0] ? c.titulos._hint : ""])
+    : [
+        ["virais", "Virais", "máximo engajamento"],
+        ["seo", "SEO", "encontráveis na busca"],
+        ["ctr", "Alta CTR", "irresistíveis pro clique"],
+      ];
 
   return (
     <>
@@ -874,12 +1085,100 @@ function Results({ p, copy, ping }) {
           <h1 className="ct-h1">{p.titulo}</h1>
           <p className="ct-sub">{p.tema} · {p.duracao} min · {(p.plataformas || []).map((x) => PLAT[x]?.label).join(" · ")}</p>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
+          <button className={`ct-btn sm ${editOpen ? "primary" : ""}`} onClick={() => setEditOpen((v) => !v)}>
+            <Pencil size={14} /> {editOpen ? "Fechar" : "Alterar"}
+          </button>
           <button className="ct-btn sm" onClick={() => { copy(buildMarkdown(p), "Markdown copiado"); }}><Copy size={14} /> Copiar</button>
           <button className="ct-btn sm" onClick={() => download(`${p.titulo}.md`, buildMarkdown(p))}><Download size={14} /> .md</button>
           <button className="ct-btn sm" onClick={() => download(`${p.titulo}.txt`, buildMarkdown(p))}><Download size={14} /> .txt</button>
         </div>
       </div>
+
+      <div className="ct-platswitch">
+        <span className="ct-platswitch-lbl">Rede social:</span>
+        {PLATFORMS.map((plat) => (
+          <div
+            key={plat.id}
+            className={`ct-pchip ${activePlat === plat.id ? "on" : ""}`}
+            onClick={() => pickPlatform(plat.id)}
+            title={`Adaptar visualização para ${plat.label}`}
+          >
+            <PlatIcon id={plat.id} size={15} /> {plat.label}
+          </div>
+        ))}
+      </div>
+
+      {activePlat && (
+        <div className="ct-platbadge">
+          <PlatIcon id={activePlat} size={14} />
+          Modo {PLAT[activePlat]?.label} — {PLAT_TITLE_HINT[activePlat]}
+        </div>
+      )}
+
+      {editOpen && (
+        <div className="ct-editpanel">
+          <h3>Alterar projeto</h3>
+          <p className="ct-sub">Ajuste os campos ou regenere só as partes que quiser. O conteúdo atual fica guardado no histórico.</p>
+          <div className="ct-field">
+            <label><Tag size={14} /> Título</label>
+            <input className="ct-input" value={editFields.titulo} onChange={(e) => setField("titulo", e.target.value)} />
+          </div>
+          <div className="ct-row">
+            <div className="ct-field">
+              <label><Sparkles size={14} /> Tema</label>
+              <input className="ct-input" value={editFields.tema} onChange={(e) => setField("tema", e.target.value)} />
+            </div>
+            <div className="ct-field">
+              <label><Clock size={14} /> Duração</label>
+              <select className="ct-select" value={editFields.duracao} onChange={(e) => setField("duracao", +e.target.value)}>
+                {[1, 3, 5, 10, 15, 20, 30].map((m) => <option key={m} value={m}>{m} min</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="ct-field">
+            <label><Target size={14} /> Objetivo</label>
+            <textarea className="ct-area" value={editFields.objetivo} onChange={(e) => setField("objetivo", e.target.value)} rows={2} />
+          </div>
+          <div className="ct-field">
+            <label><Users size={14} /> Público-alvo</label>
+            <input className="ct-input" value={editFields.publico} onChange={(e) => setField("publico", e.target.value)} />
+          </div>
+          <div className="ct-field">
+            <label><Share2 size={14} /> Plataformas</label>
+            <div className="ct-pchips">
+              {PLATFORMS.map((plat) => (
+                <div key={plat.id} className={`ct-pchip ${editFields.plataformas.includes(plat.id) ? "on" : ""}`} onClick={() => togglePlatEdit(plat.id)}>
+                  <PlatIcon id={plat.id} size={15} /> {plat.label}
+                </div>
+              ))}
+            </div>
+          </div>
+          <p className="ct-sectlbl" style={{ marginTop: 14 }}>Regerar seções (opcional)</p>
+          <div className="ct-regenpick">
+            {STEPS.map((s) => (
+              <label key={s.id}>
+                <input
+                  type="checkbox"
+                  checked={!!regenPick[s.id]}
+                  onChange={(e) => setRegenPick((r) => ({ ...r, [s.id]: e.target.checked }))}
+                />
+                {s.label}
+              </label>
+            ))}
+          </div>
+          <div className="ct-editactions">
+            <button className="ct-btn primary sm" onClick={saveMeta}><Check size={14} /> Salvar ajustes</button>
+            <button className="ct-btn sm" onClick={regenerate} disabled={regenLoading}>
+              {regenLoading ? <Loader2 size={14} className="ct-spin" /> : <RefreshCw size={14} />}
+              {regenLoading ? "Regenerando…" : "Regenerar selecionados"}
+            </button>
+            {(p.contentHistory || []).length > 0 && (
+              <button className="ct-btn sm" onClick={restoreVersion}><RotateCcw size={14} /> Restaurar anterior</button>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="ct-tabs">
         {TABS.map((t) => (
@@ -916,9 +1215,12 @@ function Results({ p, copy, ping }) {
 
       {tab === "titulos" && c.titulos && (
         <div style={{ maxWidth: 860 }}>
-          {[["virais", "Virais", "máximo engajamento"], ["seo", "SEO", "encontráveis na busca"], ["ctr", "Alta CTR", "irresistíveis pro clique"]].map(([k, lbl, sub]) => (
-            <div key={k} className="ct-card" style={{ marginBottom: 16 }}>
-              <p className="ct-sectlbl" style={{ marginBottom: 4 }}>{lbl} <span style={{ textTransform: "none", letterSpacing: 0, color: "var(--faint)", marginLeft: 6 }}>{sub}</span></p>
+          {titleSections.map(([k, lbl, sub], idx) => (
+            <div key={k} className={`ct-card ${idx === 0 ? "ct-focuscard" : ""}`} style={{ marginBottom: 16 }}>
+              <p className="ct-sectlbl" style={{ marginBottom: 4 }}>
+                {lbl}
+                {sub && <span style={{ textTransform: "none", letterSpacing: 0, color: idx === 0 ? "#2ed573" : "var(--faint)", marginLeft: 6 }}>{idx === 0 ? `★ ideal para ${PLAT[activePlat]?.label}: ${sub}` : sub}</span>}
+              </p>
               {(c.titulos[k] || []).map((t, i) => (
                 <div key={i} className="ct-titrow">
                   <span className="ct-titnum">{String(i + 1).padStart(2, "0")}</span>
@@ -936,6 +1238,14 @@ function Results({ p, copy, ping }) {
 
       {tab === "hashtags" && c.hashtags && (
         <div style={{ maxWidth: 760 }}>
+          {c.hashtags._focusTags?.length > 0 && (
+            <div className="ct-card ct-focuscard">
+              <p className="ct-sectlbl">Hashtags para {PLAT[activePlat]?.label}</p>
+              <div className="ct-tags">
+                {c.hashtags._focusTags.map((h, i) => <span key={i} className="ct-tagchip" onClick={() => copy(h)}>{h}</span>)}
+              </div>
+            </div>
+          )}
           {[["top", "Top"], ["nicho", "Nicho"], ["virais", "Virais"]].map(([k, lbl]) =>
             c.hashtags[k] ? (
               <div key={k} className="ct-card" style={{ marginBottom: 14 }}>
@@ -946,7 +1256,7 @@ function Results({ p, copy, ping }) {
               </div>
             ) : null
           )}
-          {c.hashtags.plataformas && (
+          {c.hashtags.plataformas && !c.hashtags._focusPlat && (
             <div className="ct-card">
               <p className="ct-sectlbl">Por plataforma</p>
               {Object.entries(c.hashtags.plataformas).map(([k, arr]) => (
