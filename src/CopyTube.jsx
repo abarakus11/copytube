@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import {
   LayoutDashboard, Sparkles, FolderOpen, Play, Hash, FileText, Type,
   Share2, Copy, Download, Trash2, Plus, Loader2, Check, X, Clock,
@@ -158,6 +158,56 @@ const PLATFORMS = [
   { id: "facebook", label: "Facebook", color: "#5B7BFF" },
 ];
 const PLAT = Object.fromEntries(PLATFORMS.map((p) => [p.id, p]));
+const STORAGE_KEY = "copytube-projects";
+
+function loadProjects() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function countAssets(content = {}) {
+  let n = 0;
+  if (content.roteiro) n += 1;
+  if (content.titulos) {
+    n += ["virais", "seo", "ctr"].reduce((s, k) => s + (content.titulos[k]?.length || 0), 0);
+  }
+  if (content.hashtags) {
+    n += ["top", "nicho", "virais"].reduce((s, k) => s + (content.hashtags[k]?.length || 0), 0);
+    n += content.hashtags.plataformas
+      ? Object.values(content.hashtags.plataformas).reduce((s, arr) => s + (arr?.length || 0), 0)
+      : 0;
+  }
+  if (content.descricoes) n += Object.values(content.descricoes).filter(Boolean).length;
+  return n;
+}
+
+function computeStats(projects) {
+  const assets = projects.reduce((n, p) => n + countAssets(p.content), 0);
+  const nets = new Set();
+  projects.forEach((p) => (p.plataformas || []).forEach((x) => nets.add(x)));
+
+  const scores = [];
+  projects.forEach((p) => {
+    const t = p.content?.titulos;
+    if (!t) return;
+    ["virais", "seo", "ctr"].forEach((k) => {
+      (t[k] || []).forEach((item) => {
+        if (item.seo != null && item.eng != null && item.ctr != null) {
+          scores.push((item.seo + item.eng + item.ctr) / 3);
+        }
+      });
+    });
+  });
+  const potencialMedio = scores.length
+    ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+    : null;
+
+  return { projetos: projects.length, assets, redes: nets.size, potencialMedio };
+}
 
 /* ------------------------------------------------------------------ */
 /*  AI layer                                                          */
@@ -432,10 +482,14 @@ function download(name, text) {
 /* ------------------------------------------------------------------ */
 export default function CopyTube() {
   const [view, setView] = useState("dashboard");
-  const [projects, setProjects] = useState([]);
+  const [projects, setProjects] = useState(loadProjects);
   const [activeId, setActiveId] = useState(null);
   const [toast, setToast] = useState("");
   const toastT = useRef(null);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
+  }, [projects]);
 
   const ping = (msg) => {
     setToast(msg);
@@ -449,18 +503,7 @@ export default function CopyTube() {
 
   const active = projects.find((p) => p.id === activeId);
 
-  const stats = useMemo(() => {
-    const assets = projects.reduce((n, p) => {
-      const c = p.content || {};
-      return n + (c.roteiro ? 1 : 0) +
-        (c.titulos ? ["virais", "seo", "ctr"].reduce((s, k) => s + (c.titulos[k]?.length || 0), 0) : 0) +
-        (c.hashtags ? ["top", "nicho", "virais"].reduce((s, k) => s + (c.hashtags[k]?.length || 0), 0) : 0) +
-        (c.descricoes ? Object.keys(c.descricoes).length : 0);
-    }, 0);
-    const nets = new Set();
-    projects.forEach((p) => (p.plataformas || []).forEach((x) => nets.add(x)));
-    return { projetos: projects.length, assets, redes: nets.size };
-  }, [projects]);
+  const stats = useMemo(() => computeStats(projects), [projects]);
 
   const openProject = (id) => { setActiveId(id); setView("results"); };
   const removeProject = (id) => { setProjects((ps) => ps.filter((p) => p.id !== id)); ping("Projeto excluído"); };
@@ -533,7 +576,7 @@ function Dashboard({ stats, onNew }) {
     { ico: <Layers size={17} />, num: stats.projetos, lbl: "Projetos" },
     { ico: <Wand2 size={17} />, num: stats.assets, lbl: "Conteúdos gerados" },
     { ico: <Share2 size={17} />, num: stats.redes, lbl: "Redes conectadas" },
-    { ico: <TrendingUp size={17} />, num: "94%", lbl: "Potencial médio" },
+    { ico: <TrendingUp size={17} />, num: stats.potencialMedio != null ? `${stats.potencialMedio}%` : "—", lbl: "Potencial médio" },
   ];
   return (
     <>
