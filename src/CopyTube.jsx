@@ -22,13 +22,29 @@ const STYLE = `
   --disp:'Space Grotesk',sans-serif; --body:'Inter',sans-serif; --mono:'JetBrains Mono',monospace;
   font-family:var(--body); color:var(--text); background:var(--bg);
   height:100%; min-height:100vh; -webkit-font-smoothing:antialiased; font-size:14px;
+  position:relative; isolation:isolate;
 }
 .ct-root *{box-sizing:border-box}
 .ct-root::selection{background:rgba(123,92,255,.35)}
 
+/* video background */
+.ct-vidbg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background:#0A0B0F}
+.ct-vidbg-frame{position:absolute;inset:0}
+.ct-vidbg iframe{
+  position:absolute;top:50%;left:50%;
+  width:max(100vw,177.78vh);height:max(56.25vw,100vh);
+  min-width:1920px;min-height:1080px;
+  transform:translate(-50%,-50%) scale(1.18);
+  border:0;pointer-events:none;
+}
+.ct-vidbg-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(160deg,rgba(10,11,15,.68) 0%,rgba(10,11,15,.84) 55%,rgba(10,11,15,.78) 100%);
+}
+
 /* shell */
-.ct-shell{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
-.ct-side{background:var(--bg2);border-right:1px solid var(--border);padding:20px 14px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh}
+.ct-shell{display:grid;grid-template-columns:248px 1fr;min-height:100vh;position:relative;z-index:1}
+.ct-side{background:rgba(14,16,23,.78);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-right:1px solid rgba(36,40,52,.85);padding:20px 14px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh}
 .ct-brand{display:flex;align-items:center;padding:0 6px 14px}
 .ct-logo{display:block;height:auto;object-fit:contain;max-width:100%;background:transparent}
 .ct-logo-side{width:200px;max-height:110px}
@@ -55,7 +71,7 @@ const STYLE = `
 
 /* cards */
 .ct-grid{display:grid;gap:16px}
-.ct-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px}
+.ct-card{background:rgba(20,22,30,.86);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(36,40,52,.9);border-radius:14px;padding:18px}
 .ct-stat{display:flex;flex-direction:column;gap:10px}
 .ct-stat .ct-ico{width:34px;height:34px;border-radius:9px;background:var(--surface2);border:1px solid var(--border2);display:grid;place-items:center;color:var(--violet2)}
 .ct-stat .ct-num{font-family:var(--disp);font-size:30px;font-weight:600;letter-spacing:-.02em;line-height:1}
@@ -145,7 +161,7 @@ const STYLE = `
 /* misc */
 .ct-empty{text-align:center;padding:60px 20px;color:var(--muted)}
 .ct-empty .eico{width:54px;height:54px;border-radius:14px;background:var(--surface);border:1px solid var(--border);display:grid;place-items:center;margin:0 auto 16px;color:var(--violet2)}
-.ct-projrow{display:flex;align-items:center;gap:16px;padding:16px;border:1px solid var(--border);border-radius:12px;background:var(--surface);margin-bottom:10px;cursor:pointer;transition:.15s}
+.ct-projrow{display:flex;align-items:center;gap:16px;padding:16px;border:1px solid rgba(36,40,52,.9);border-radius:12px;background:rgba(20,22,30,.84);backdrop-filter:blur(8px);margin-bottom:10px;cursor:pointer;transition:.15s}
 .ct-projrow:hover{border-color:var(--border2);background:var(--surface2)}
 .ct-projmeta{flex:1;min-width:0}
 .ct-projmeta b{font-family:var(--disp);font-weight:600;font-size:14.5px;display:block}
@@ -204,6 +220,38 @@ function PlatIcon({ id, size = 16, className = "" }) {
 const STORAGE_KEY = "copytube-projects";
 const LOGO_SRC = "/copytube-logo.png";
 const LOGO_WIDTH = 1024;
+const BG_VIDEO_ID = "Q8KfV7jd8s8";
+
+function VideoBackground() {
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const params = new URLSearchParams({
+    autoplay: "1",
+    mute: "1",
+    loop: "1",
+    playlist: BG_VIDEO_ID,
+    controls: "0",
+    modestbranding: "1",
+    rel: "0",
+    iv_load_policy: "3",
+    disablekb: "1",
+    fs: "0",
+    playsinline: "1",
+    cc_load_policy: "0",
+    enablejsapi: "1",
+    showinfo: "0",
+    ...(origin ? { origin } : {}),
+  });
+  const src = `https://www.youtube-nocookie.com/embed/${BG_VIDEO_ID}?${params}`;
+
+  return (
+    <div className="ct-vidbg" aria-hidden="true">
+      <div className="ct-vidbg-frame">
+        <iframe src={src} title="" tabIndex={-1} allow="autoplay; encrypted-media; picture-in-picture" />
+      </div>
+      <div className="ct-vidbg-overlay" />
+    </div>
+  );
+}
 
 function BrandLogo({ variant = "side", className = "" }) {
   const variants = {
@@ -775,6 +823,7 @@ export default function CopyTube() {
 
   return (
     <div className="ct-root">
+      <VideoBackground />
       <style>{STYLE}</style>
       <div className="ct-shell">
         {/* Sidebar */}
