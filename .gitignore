@@ -7,4 +7,4 @@ dist
 !.env.example
 .cursor
 *.log
-npm-debug.log*
+.cursor/hooks/*.log

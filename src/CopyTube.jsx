@@ -159,68 +159,6 @@ const PLATFORMS = [
 ];
 const PLAT = Object.fromEntries(PLATFORMS.map((p) => [p.id, p]));
 
-const SEED = {
-  id: "seed1",
-  titulo: "Albion Online — Prata para iniciantes",
-  tema: "Albion Online",
-  jogo: "Albion Online",
-  nicho: "Games / MMORPG",
-  objetivo: "Ensinar iniciantes a ganhar prata do zero",
-  publico: "Jogadores iniciantes de MMORPG, 16–30 anos",
-  duracao: 15,
-  plataformas: ["youtube", "tiktok", "instagram"],
-  createdAt: Date.now() - 86400000 * 2,
-  content: {
-    roteiro: {
-      gancho: "Você está gastando horas no Albion e terminando o dia com a bolsa vazia? Em 15 minutos eu te mostro o caminho que me fez sair do zero — sem PvP, sem risco e sem gastar dinheiro real.",
-      introducao: "Fala, aventureiro! Hoje o foco é um só: encher sua bolsa de prata começando absolutamente do nada. Nada de teoria solta — é o passo a passo que funciona na conta nova.",
-      blocos: [
-        { tempo: "0:00 – 1:00", titulo: "O erro que mantém você pobre", fala: "A maioria dos iniciantes pula direto pro combate e morre perdendo tudo. A prata de verdade no começo vem da economia, não da espada." },
-        { tempo: "1:00 – 4:00", titulo: "Coleta inteligente de recursos", fala: "Mostro as melhores zonas T3/T4 por bioma e como montar uma rota de coleta que rende sem te expor a ganks." },
-        { tempo: "4:00 – 8:00", titulo: "Refino e crafting que dão lucro", fala: "Refinar o que você coleta multiplica o valor. Explico o foco de retorno e como ler o mercado antes de vender." },
-        { tempo: "8:00 – 12:00", titulo: "Vendendo no mercado certo", fala: "Royal vs Black Market: onde cada item vende melhor e como evitar a taxa comendo seu lucro." },
-        { tempo: "12:00 – 15:00", titulo: "Rotina diária de farm", fala: "Fecho com um plano de 1 hora por dia que mantém o fluxo de prata constante mesmo pra quem tem pouco tempo." },
-      ],
-      cta: "Se esse roteiro te ajudou, deixa o like, se inscreve no canal e comenta qual build você quer ver na próxima. Salva esse vídeo pra consultar na hora do farm!",
-    },
-    titulos: {
-      virais: [
-        { t: "Do ZERO a 1 MILHÃO de prata em Albion (sem PvP)", seo: 74, eng: 92, ctr: 88 },
-        { t: "O método de prata que ninguém te conta no Albion", seo: 70, eng: 90, ctr: 85 },
-        { t: "Fiquei RICO no Albion sem gastar 1 real — veja como", seo: 68, eng: 94, ctr: 90 },
-        { t: "Pare de perder prata: o erro #1 dos iniciantes", seo: 72, eng: 86, ctr: 82 },
-      ],
-      seo: [
-        { t: "Como ganhar prata no Albion Online para iniciantes 2026", seo: 95, eng: 70, ctr: 74 },
-        { t: "Guia completo de prata no Albion Online (passo a passo)", seo: 92, eng: 68, ctr: 71 },
-        { t: "Melhores formas de farmar prata no Albion Online", seo: 90, eng: 66, ctr: 70 },
-        { t: "Albion Online: economia para iniciantes do zero", seo: 88, eng: 64, ctr: 68 },
-      ],
-      ctr: [
-        { t: "1 HORA por dia = bolsa cheia no Albion 💰", seo: 66, eng: 84, ctr: 91 },
-        { t: "Esse farm de prata é quase ILEGAL de tão bom", seo: 60, eng: 88, ctr: 93 },
-        { t: "Eu testei e funcionou: prata fácil no Albion", seo: 64, eng: 82, ctr: 87 },
-        { t: "Iniciante? Faça ISSO antes de qualquer outra coisa", seo: 67, eng: 80, ctr: 86 },
-      ],
-    },
-    hashtags: {
-      top: ["#AlbionOnline", "#Albion", "#MMORPG", "#GamingBR", "#Games"],
-      nicho: ["#AlbionBrasil", "#FarmDePrata", "#AlbionDicas", "#MMOBR", "#AlbionEconomy"],
-      virais: ["#GamerBR", "#DicasDeGame", "#ComoJogar", "#GameplayBR", "#ProGamer"],
-      plataformas: {
-        youtube: ["#AlbionOnline", "#GuiaAlbion", "#PrataAlbion", "#MMORPG2026"],
-        tiktok: ["#albion", "#gamingbr", "#fyp", "#mmorpg"],
-        instagram: ["#albiononline", "#gamesbr", "#dicasdegame", "#mmorpg"],
-      },
-    },
-    descricoes: {
-      youtube: "💰 Aprenda a ganhar prata no Albion Online do absoluto zero! Neste guia completo de 15 minutos eu mostro coleta inteligente, refino lucrativo, leitura de mercado e uma rotina diária de 1 hora que mantém sua bolsa sempre cheia — sem PvP e sem gastar dinheiro real.\n\n⏱️ CAPÍTULOS\n0:00 O erro que mantém você pobre\n1:00 Coleta de recursos\n4:00 Refino e crafting\n8:00 Vendendo no mercado certo\n12:00 Rotina diária de farm\n\n👉 Inscreva-se para mais guias de Albion!",
-      tiktok: "Prata fácil no Albion sem PvP 💰 salva esse vídeo pro farm de hoje 👀 #albion #gamingbr #fyp",
-      instagram: "Cansado de terminar o dia sem prata no Albion? 💸 Esse é o método que tira qualquer iniciante do zero — coleta, refino e venda no lugar certo. Salva e marca aquele amigo que vive falido no jogo 👇",
-    },
-  },
-};
-
 /* ------------------------------------------------------------------ */
 /*  AI layer                                                          */
 /* ------------------------------------------------------------------ */
@@ -494,7 +432,7 @@ function download(name, text) {
 /* ------------------------------------------------------------------ */
 export default function CopyTube() {
   const [view, setView] = useState("dashboard");
-  const [projects, setProjects] = useState([SEED]);
+  const [projects, setProjects] = useState([]);
   const [activeId, setActiveId] = useState(null);
   const [toast, setToast] = useState("");
   const toastT = useRef(null);
@@ -568,7 +506,7 @@ export default function CopyTube() {
 
         {/* Main */}
         <main className="ct-main">
-          {view === "dashboard" && <Dashboard stats={stats} projects={projects} onNew={() => setView("generator")} onOpen={openProject} />}
+          {view === "dashboard" && <Dashboard stats={stats} onNew={() => setView("generator")} />}
           {view === "generator" && (
             <Generator
               onDone={(proj) => {
@@ -590,7 +528,7 @@ export default function CopyTube() {
 }
 
 /* ----------------------------- Dashboard --------------------------- */
-function Dashboard({ stats, projects, onNew, onOpen }) {
+function Dashboard({ stats, onNew }) {
   const cards = [
     { ico: <Layers size={17} />, num: stats.projetos, lbl: "Projetos" },
     { ico: <Wand2 size={17} />, num: stats.assets, lbl: "Conteúdos gerados" },
@@ -603,7 +541,7 @@ function Dashboard({ stats, projects, onNew, onOpen }) {
         <div><h1 className="ct-h1">Dashboard</h1><p className="ct-sub">Sua central de produção de conteúdo com IA.</p></div>
         <button className="ct-btn primary" onClick={onNew}><Plus size={16} /> Novo conteúdo</button>
       </div>
-      <div className="ct-grid" style={{ gridTemplateColumns: "repeat(4,1fr)", marginBottom: 28 }}>
+      <div className="ct-grid" style={{ gridTemplateColumns: "repeat(4,1fr)" }}>
         {cards.map((c, i) => (
           <div key={i} className="ct-card ct-stat">
             <div className="ct-ico">{c.ico}</div>
@@ -612,22 +550,6 @@ function Dashboard({ stats, projects, onNew, onOpen }) {
           </div>
         ))}
       </div>
-      <p className="ct-sectlbl">Projetos recentes</p>
-      {projects.slice(0, 4).map((p) => (
-        <div key={p.id} className="ct-projrow" onClick={() => onOpen(p.id)}>
-          <div className="ct-ico" style={{ width: 34, height: 34, borderRadius: 9, background: "var(--surface2)", border: "1px solid var(--border2)", display: "grid", placeItems: "center", color: "var(--violet2)" }}>
-            <Play size={15} />
-          </div>
-          <div className="ct-projmeta">
-            <b>{p.titulo}</b>
-            <div className="ct-mini">
-              <span className="ct-pill">{p.duracao} min</span>
-              {(p.plataformas || []).map((x) => <span key={x} className="ct-pill">{PLAT[x]?.label}</span>)}
-            </div>
-          </div>
-          <ChevronRight size={18} style={{ color: "var(--faint)" }} />
-        </div>
-      ))}
     </>
   );
 }
