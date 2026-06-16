@@ -75,9 +75,11 @@ const STYLE = `
 .ct-area{resize:vertical;min-height:64px}
 .ct-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .ct-pchips{display:flex;flex-wrap:wrap;gap:8px}
-.ct-pchip{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:9px;border:1px solid var(--border);background:var(--bg2);color:var(--muted);cursor:pointer;font-size:12.5px;font-weight:500;transition:.15s}
-.ct-pchip .dot{width:8px;height:8px;border-radius:50%}
-.ct-pchip.on{color:var(--text);border-color:var(--border2);background:var(--surface2)}
+.ct-pchip{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:9px;border:1px solid var(--border);background:var(--bg2);color:var(--muted);cursor:pointer;font-size:12.5px;font-weight:500;transition:.2s ease;user-select:none}
+.ct-pchip:hover{color:var(--text);border-color:var(--border2);background:var(--surface)}
+.ct-pchip .dot{width:8px;height:8px;border-radius:50%;transition:box-shadow .2s ease}
+.ct-pchip.on{color:#d7ffe4;border-color:#2ed573;background:rgba(46,213,115,.14);box-shadow:0 0 0 1px rgba(46,213,115,.55),0 0 14px rgba(46,213,115,.45),inset 0 0 10px rgba(46,213,115,.12)}
+.ct-pchip.on .dot{box-shadow:0 0 10px currentColor,0 0 4px #2ed573}
 
 /* tabs */
 .ct-tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:24px;flex-wrap:wrap}
