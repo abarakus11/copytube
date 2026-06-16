@@ -252,6 +252,91 @@ function tagFrom(text) {
   return "#" + base.charAt(0).toUpperCase() + base.slice(1).toLowerCase();
 }
 
+function buildRoteiroBlocos(f) {
+  const tema = f.tema || f.titulo || "o tema";
+  const obj = (f.objetivo || "dominar o assunto").trim();
+  const pub = (f.publico || "quem está começando").split(",")[0].trim();
+  const nicho = f.nicho || "conteúdo";
+  const n = Math.min(6, Math.max(4, Math.round((f.duracao || 10) / 3)));
+  const blockDur = f.duracao / n;
+
+  const segments = [
+    {
+      titulo: "O erro que trava a maioria",
+      fala: `Em ${tema}, o erro mais comum é querer pular etapas. Para ${pub}, isso trava tudo antes de ${obj.toLowerCase()}. Mostro onde a maioria erra e o primeiro ajuste para corrigir agora.`,
+    },
+    {
+      titulo: "O passo a passo prático",
+      fala: `Agora mão na massa: vou ${obj.toLowerCase()} em ordem lógica. Começo pelo essencial de ${tema} e avanço passo a passo — você acompanha e entende cada movimento junto comigo.`,
+    },
+    {
+      titulo: "A estratégia que realmente funciona",
+      fala: `Esta é a parte que muda o jogo em ${nicho}. Explico a estratégia para ${obj.toLowerCase()} com foco em ${tema}: o que priorizar, o que cortar e por que essa ordem funciona.`,
+    },
+    {
+      titulo: "Armadilhas e como evitar",
+      fala: `Três armadilhas que vi ${pub} cair em ${tema}. Para cada uma, mostro o sinal de alerta e a correção na hora — assim você não refaz trabalho à toa.`,
+    },
+    {
+      titulo: "Prova e resultados",
+      fala: `Hora da prova: aplico ao vivo o que vimos em ${tema}. Você vê o antes e depois e como isso se conecta com ${obj.toLowerCase()} de forma concreta.`,
+    },
+    {
+      titulo: "Plano para aplicar hoje",
+      fala: `Fechamento: resumo em sequência clara o que fazer hoje sobre ${tema}. Se você é ${pub}, sai deste vídeo com um mini-plano para executar ainda hoje.`,
+    },
+  ];
+
+  return Array.from({ length: n }, (_, i) => {
+    const seg = segments[i];
+    const start = i * blockDur;
+    const end = i === n - 1 ? f.duracao : (i + 1) * blockDur;
+    return {
+      tempo: `${fmtMin(start)} – ${fmtMin(end)}`,
+      titulo: seg.titulo,
+      fala: seg.fala,
+    };
+  });
+}
+
+function normalizeRoteiro(roteiro, f) {
+  const localBlocos = buildRoteiroBlocos(f);
+  if (!roteiro) {
+    const tema = f.tema || f.titulo;
+    return {
+      gancho: `Você já tentou ${tema} e não viu resultado? Em ${f.duracao} minutos mostro como ${(f.objetivo || "").toLowerCase()} — direto ao ponto.`,
+      introducao: `Fala! Hoje o tema é ${tema}${f.jogo ? ` (${f.jogo})` : ""}. Objetivo: ${f.objetivo}. Se você é ${f.publico}, fica até o final.`,
+      blocos: localBlocos,
+      cta: `Curtiu? Deixa o like, se inscreve e comenta o que quer ver sobre ${tema} no próximo vídeo!`,
+    };
+  }
+
+  const raw = (roteiro.blocos || []).length ? roteiro.blocos : localBlocos;
+  const seen = new Set();
+  const blocos = raw.map((b, i) => {
+    const fala = (b.fala || "").trim();
+    const key = fala.toLowerCase().replace(/\s+/g, " ").slice(0, 80);
+    const dup = !fala || fala.length < 35 || seen.has(key);
+    if (fala && !dup) seen.add(key);
+    const local = localBlocos[i] || localBlocos[localBlocos.length - 1];
+    return {
+      tempo: b.tempo || local.tempo,
+      titulo: (b.titulo || local.titulo).trim(),
+      fala: dup ? local.fala : fala,
+    };
+  });
+
+  while (blocos.length < localBlocos.length) blocos.push(localBlocos[blocos.length]);
+
+  const tema = f.tema || f.titulo;
+  return {
+    gancho: (roteiro.gancho || "").trim() || `Você já tentou ${tema} e não viu resultado? Em ${f.duracao} minutos mostro como ${(f.objetivo || "").toLowerCase()} — direto ao ponto.`,
+    introducao: (roteiro.introducao || "").trim() || `Fala! Hoje o tema é ${tema}${f.jogo ? ` (${f.jogo})` : ""}. Objetivo: ${f.objetivo}. Se você é ${f.publico}, fica até o final.`,
+    blocos: blocos.slice(0, localBlocos.length),
+    cta: (roteiro.cta || "").trim() || `Curtiu? Deixa o like, se inscreve e comenta o que quer ver sobre ${tema} no próximo vídeo!`,
+  };
+}
+
 function generateLocal(step, f) {
   const tema = f.tema || f.titulo;
   const jogo = f.jogo || tema;
@@ -267,21 +352,7 @@ function generateLocal(step, f) {
   ];
 
   if (step === "roteiro") {
-    const blocos = Array.from({ length: n }, (_, i) => {
-      const start = i * blockDur;
-      const end = i === n - 1 ? f.duracao : (i + 1) * blockDur;
-      return {
-        tempo: `${fmtMin(start)} – ${fmtMin(end)}`,
-        titulo: blocoTitulos[i],
-        fala: `Neste trecho eu explico como ${f.objetivo.toLowerCase()}, com foco em ${tema}. Ideal para ${f.publico.split(",")[0] || "quem está começando"}.`,
-      };
-    });
-    return {
-      gancho: `Você já tentou ${tema} e não viu resultado? Em ${f.duracao} minutos mostro como ${f.objetivo.toLowerCase()} — direto ao ponto.`,
-      introducao: `Fala! Hoje o tema é ${tema}${f.jogo ? ` (${f.jogo})` : ""}. Objetivo: ${f.objetivo}. Se você é ${f.publico}, fica até o final.`,
-      blocos,
-      cta: `Curtiu? Deixa o like, se inscreve e comenta o que quer ver sobre ${tema} no próximo vídeo!`,
-    };
+    return normalizeRoteiro(null, f);
   }
 
   if (step === "titulos") {
@@ -414,7 +485,7 @@ async function runGeneration(f, onStep, onMode) {
     roteiro: () =>
       callAI(
         "Você é roteirista profissional de vídeos para redes sociais e copywriter de resposta direta. Escreva com linguagem natural de fala, ganchos fortes e tom adequado ao público. Responda SOMENTE com JSON minificado válido, sem markdown e sem texto fora do JSON.",
-        `${ctx(f)}\n\nGere o roteiro. Divida a duração em 4 a 6 blocos sequenciais cobrindo de 0:00 até o fim. Cada "fala" deve ter 2-3 frases em tom de fala. Formato:\n{"gancho":"...","introducao":"...","blocos":[{"tempo":"0:00 – 1:00","titulo":"...","fala":"..."}],"cta":"..."}`
+        `${ctx(f)}\n\nGere o roteiro em português do Brasil para ${f.duracao} minutos.\n\nREGRAS OBRIGATÓRIAS:\n- Divida em 4 a 6 blocos sequenciais com tempos contínuos de 0:00 até o fim do vídeo.\n- Cada bloco precisa de título DIFERENTE e fala ÚNICA (2 a 4 frases em tom de fala ao câmera).\n- Progressão narrativa: problema → passo a passo → estratégia → armadilhas → prova → plano de ação.\n- NUNCA repita a mesma frase, parágrafo ou ideia em blocos diferentes.\n- O gancho deve prender nos primeiros 5 segundos; o CTA deve pedir like, inscrição e comentário.\n\nFormato:\n{"gancho":"...","introducao":"...","blocos":[{"tempo":"0:00 – 3:00","titulo":"...","fala":"..."}],"cta":"..."}`
       ),
     titulos: () =>
       callAI(
@@ -437,19 +508,17 @@ async function runGeneration(f, onStep, onMode) {
   for (const step of STEPS) {
     onStep(step.id, "active");
     try {
-      out[step.id] = await tasks[step.id]();
+      const raw = await tasks[step.id]();
+      out[step.id] = step.id === "roteiro" ? normalizeRoteiro(raw, f) : raw;
       aiSteps += 1;
       onStep(step.id, "done");
     } catch {
-      if (hasApi) {
+      try {
+        const local = generateLocal(step.id, f);
+        out[step.id] = step.id === "roteiro" ? normalizeRoteiro(local, f) : local;
+        onStep(step.id, "done");
+      } catch {
         onStep(step.id, "error");
-      } else {
-        try {
-          out[step.id] = generateLocal(step.id, f);
-          onStep(step.id, "done");
-        } catch {
-          onStep(step.id, "error");
-        }
       }
     }
   }
@@ -566,8 +635,7 @@ export default function CopyTube({ user, onLogout }) {
           <div className="ct-navlbl">Conectado</div>
           {PLATFORMS.map((p) => (
             <div key={p.id} className="ct-nav" style={{ cursor: "default" }}>
-              <span className="dot" style={{ width: 9, height: 9, borderRadius: 9, background: p.color, display: "inline-block" }} />
-              {p.label}
+              <PlatIcon id={p.id} size={14} /> {p.label}
             </div>
           ))}
           <div className="ct-side-foot">
