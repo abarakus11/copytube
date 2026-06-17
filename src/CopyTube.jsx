@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Sparkles, FolderOpen, Play, Hash, FileText, Type,
   Share2, Copy, Download, Trash2, Plus, Loader2, Check, X, Clock,
   Target, Users, Gamepad2, Tag, TrendingUp, MousePointerClick, Radio,
-  ChevronRight, Layers, Wand2, AlertTriangle, Pencil, RefreshCw, RotateCcw,
+  ChevronRight, Layers, Wand2, AlertTriangle, Pencil, RefreshCw, RotateCcw, Zap,
   Youtube, Instagram, Linkedin, Facebook, GalleryHorizontal, ExternalLink
 } from "lucide-react";
 import { Button, Navbar, Card, EmptyState } from "./components/ui/index.js";
@@ -574,9 +574,10 @@ const metricColor = (v) => (v >= 85 ? "#2ed573" : v >= 70 ? "#7B5CFF" : "#FF9F43
 
 function Metric({ label, v }) {
   return (
-    <div className="ct-metric">
-      <span className="mlbl">{label}</span>
-      <div className="ct-bar"><i style={{ width: `${v}%`, background: metricColor(v) }} /></div>
+    <div className="pro-metric">
+      <span className="pro-metric__lbl">{label}</span>
+      <span className="pro-metric__val">{v}</span>
+      <div className="pro-metric__bar"><i style={{ width: `${v}%`, background: metricColor(v) }} /></div>
     </div>
   );
 }
@@ -664,6 +665,7 @@ export default function CopyTube() {
   return (
     <div className="ct-root ds-root">
       <VideoBackground />
+      <div className="pro-ambient" aria-hidden />
       {mobileOpen ? <div className="ds-sidebar-backdrop" onClick={() => setMobileOpen(false)} aria-hidden /> : null}
       <Navbar onMenuClick={() => setMobileOpen((v) => !v)} title={viewTitle} />
       <div className="ct-shell">
@@ -671,6 +673,7 @@ export default function CopyTube() {
           <div className="ct-brand">
             <BrandLogo variant="side" />
           </div>
+          <div className="pro-side-badge"><Sparkles size={10} /> Studio IA</div>
           <div className="ct-navlbl">Espaço</div>
           {[
             ["dashboard", LayoutDashboard, "Dashboard"],
@@ -709,7 +712,14 @@ export default function CopyTube() {
 
         {/* Main */}
         <main className="ct-main">
-          {view === "dashboard" && <Dashboard stats={stats} onNew={() => setView("generator")} />}
+          {view === "dashboard" && (
+            <Dashboard
+              stats={stats}
+              projects={projects}
+              onNew={() => setView("generator")}
+              onOpen={openProject}
+            />
+          )}
           {view === "generator" && (
             <Generator
               ping={ping}
@@ -739,29 +749,85 @@ export default function CopyTube() {
 }
 
 /* ----------------------------- Dashboard --------------------------- */
-function Dashboard({ stats, onNew }) {
+function Dashboard({ stats, projects, onNew, onOpen }) {
   const cards = [
-    { ico: <Layers size={17} />, num: stats.projetos, lbl: "Projetos" },
-    { ico: <Wand2 size={17} />, num: stats.assets, lbl: "Conteúdos gerados" },
-    { ico: <Share2 size={17} />, num: stats.redes, lbl: "Redes conectadas" },
-    { ico: <TrendingUp size={17} />, num: stats.potencialMedio != null ? `${stats.potencialMedio}%` : "—", lbl: "Potencial médio" },
+    { ico: <Layers size={18} />, num: stats.projetos, lbl: "Projetos criados", accent: "linear-gradient(90deg,#7B5CFF,#9A82FF)" },
+    { ico: <Wand2 size={18} />, num: stats.assets, lbl: "Peças de conteúdo", accent: "linear-gradient(90deg,#C13BFF,#E879F9)" },
+    { ico: <Share2 size={18} />, num: stats.redes, lbl: "Redes ativas", accent: "linear-gradient(90deg,#2ED573,#34D399)" },
+    { ico: <TrendingUp size={18} />, num: stats.potencialMedio != null ? `${stats.potencialMedio}%` : "—", lbl: "Potencial médio", accent: "linear-gradient(90deg,#FF9F43,#FF5B6E)" },
   ];
+  const recent = projects.slice(0, 4);
+
   return (
-    <>
-      <div className="ct-head">
-        <div><h1 className="ct-h1">Dashboard</h1><p className="ct-sub">Sua central de produção de conteúdo com IA.</p></div>
+    <div className="pro-page">
+      <div className="pro-page-header">
+        <div>
+          <div className="pro-kicker">Central de marketing</div>
+          <h1 className="pro-title">Produza conteúdo que converte</h1>
+          <p className="pro-lead">Roteiros, títulos virais, hashtags e descrições — tudo adaptado para cada rede, em um clique.</p>
+        </div>
         <Button variant="primary" onClick={onNew}><Plus size={16} /> Novo conteúdo</Button>
       </div>
-      <div className="ct-grid ct-grid--stats" style={{ gridTemplateColumns: "repeat(4,1fr)" }}>
+
+      <div className="pro-stat-grid">
         {cards.map((c, i) => (
-          <Card key={i} className="ct-stat" interactive>
-            <div className="ct-ico">{c.ico}</div>
-            <div className="ct-num">{c.num}</div>
-            <div className="ct-lbl">{c.lbl}</div>
-          </Card>
+          <div key={i} className="pro-stat-card" style={{ "--stat-accent": c.accent }}>
+            <div className="pro-stat-card__icon">{c.ico}</div>
+            <div className="pro-stat-card__num">{c.num}</div>
+            <div className="pro-stat-card__lbl">{c.lbl}</div>
+          </div>
         ))}
       </div>
-    </>
+
+      <div className="pro-showcase">
+        <div className="pro-showcase__grid">
+          {[
+            { ico: <Play size={18} />, t: "Roteiro completo", d: "Gancho, blocos minuto a minuto e CTA" },
+            { ico: <Type size={18} />, t: "18 títulos", d: "Virais, SEO e alta CTR com scores" },
+            { ico: <Hash size={18} />, t: "Hashtags", d: "Por nicho e adaptadas a cada rede" },
+            { ico: <FileText size={18} />, t: "Descrições", d: "Copy pronta para publicar" },
+          ].map((item, i) => (
+            <div key={i} className="pro-showcase__item">
+              {item.ico}
+              <b>{item.t}</b>
+              <span>{item.d}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="pro-split">
+        <div className="pro-panel">
+          <h3><Zap size={16} /> Ações rápidas</h3>
+          <div className="pro-action-list">
+            <button type="button" className="pro-action-item" onClick={onNew}>
+              <span className="pro-action-item__ico"><Sparkles size={18} /></span>
+              <span><b>Gerar novo vídeo</b><small>Briefing completo com IA</small></span>
+              <ChevronRight size={16} style={{ marginLeft: "auto", opacity: 0.4 }} />
+            </button>
+            <button type="button" className="pro-action-item" onClick={() => projects[0] && onOpen(projects[0].id)} disabled={!projects.length}>
+              <span className="pro-action-item__ico" style={{ background: "linear-gradient(135deg,#2ED573,#10B981)" }}><FolderOpen size={18} /></span>
+              <span><b>Último projeto</b><small>{projects[0]?.titulo || "Nenhum ainda"}</small></span>
+              <ChevronRight size={16} style={{ marginLeft: "auto", opacity: 0.4 }} />
+            </button>
+          </div>
+        </div>
+        <div className="pro-panel">
+          <h3><Clock size={16} /> Recentes</h3>
+          {recent.length === 0 ? (
+            <p className="ct-sub" style={{ margin: 0 }}>Seus projetos aparecem aqui após a primeira geração.</p>
+          ) : recent.map((p) => (
+            <div key={p.id} className="pro-recent-item" onClick={() => onOpen(p.id)}>
+              <div>
+                <b>{p.titulo}</b>
+                <small>{p.tema} · {new Date(p.createdAt).toLocaleDateString("pt-BR")}</small>
+              </div>
+              <ChevronRight size={16} style={{ opacity: 0.35, flexShrink: 0 }} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -806,102 +872,156 @@ function Generator({ onDone, ping }) {
 
   if (generating) {
     return (
-      <>
-        <div className="ct-head"><div><h1 className="ct-h1">Gerando conteúdo</h1><p className="ct-sub">A IA está produzindo cada peça para "{f.titulo}".</p></div></div>
-        <div className="ct-gen">
-          {STEPS.map((s) => {
-            const st = progress[s.id];
-            const Ico = s.icon;
-            return (
-              <div key={s.id} className={`ct-step ${st === "active" ? "active" : st === "done" ? "done" : ""}`}>
-                <div className="sico">
-                  {st === "active" ? <Loader2 size={16} className="ct-spin" /> : st === "done" ? <Check size={16} /> : st === "error" ? <AlertTriangle size={16} style={{ color: "var(--coral)" }} /> : <Ico size={15} />}
+      <div className="pro-page pro-gen-wrap">
+        <div className="pro-gen-loading">
+          <div className="pro-kicker">IA em ação</div>
+          <h2 className="pro-title" style={{ fontSize: "1.5rem" }}>Criando &ldquo;{f.titulo}&rdquo;</h2>
+          <p className="pro-lead" style={{ margin: "8px auto 0", textAlign: "center" }}>Roteiro, títulos, hashtags e descrições — adaptados ao seu briefing.</p>
+          <div className="ct-gen">
+            {STEPS.map((s) => {
+              const st = progress[s.id];
+              const Ico = s.icon;
+              return (
+                <div key={s.id} className={`ct-step ${st === "active" ? "active" : st === "done" ? "done" : ""}`}>
+                  <div className="sico">
+                    {st === "active" ? <Loader2 size={16} className="ct-spin" /> : st === "done" ? <Check size={16} /> : st === "error" ? <AlertTriangle size={16} style={{ color: "var(--coral)" }} /> : <Ico size={15} />}
+                  </div>
+                  <div><b>{s.label}</b><small>{st === "error" ? "Falha na API — gere novamente" : s.desc}</small></div>
                 </div>
-                <div><b>{s.label}</b><small>{st === "error" ? "Falha na API — gere novamente" : s.desc}</small></div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-      </>
+      </div>
     );
   }
 
   return (
-    <>
-      <div className="gen-hero">
-        <h1 className="ct-h1">Gerar conteúdo</h1>
-        <p className="ct-sub">Preencha o briefing do vídeo — roteiro, títulos, hashtags e descrições saem prontos para cada rede.</p>
-        <div className="gen-steps-hint">
-          <span>1. Título e tema</span>
-          <span>2. Público e objetivo</span>
-          <span>3. Escolha as redes</span>
-          <span>4. Gerar com IA</span>
+    <div className="pro-page pro-gen-wrap">
+      <div className="pro-page-header">
+        <div>
+          <div className="pro-kicker">Briefing inteligente</div>
+          <h1 className="pro-title">Gerar conteúdo</h1>
+          <p className="pro-lead">Descreva o vídeo uma vez. Receba pacote completo para publicar em todas as redes.</p>
         </div>
       </div>
-      <Card style={{ maxWidth: 720 }}>
-        <div className="ct-field">
-          <label><Tag size={14} /> Título do projeto</label>
-          <input className="ct-input" value={f.titulo} onChange={(e) => set("titulo", e.target.value)} placeholder="Ex.: Guia completo para iniciantes" />
-        </div>
-        <div className="ct-row">
-          <div className="ct-field">
-            <label><Sparkles size={14} /> Tema principal</label>
-            <input className="ct-input" value={f.tema} onChange={(e) => set("tema", e.target.value)} placeholder="Sobre o que é o vídeo" />
-          </div>
-          <div className="ct-field">
-            <label><Gamepad2 size={14} /> Jogo (se for gamer)</label>
-            <input className="ct-input" value={f.jogo} onChange={(e) => set("jogo", e.target.value)} placeholder="Opcional" />
-          </div>
-        </div>
-        <div className="ct-row">
-          <div className="ct-field">
-            <label><Layers size={14} /> Nicho</label>
-            <input className="ct-input" value={f.nicho} onChange={(e) => set("nicho", e.target.value)} placeholder="Games, finanças, beleza..." />
-          </div>
-          <div className="ct-field">
-            <label><Clock size={14} /> Duração</label>
-            <select className="ct-select" value={f.duracao} onChange={(e) => set("duracao", +e.target.value)}>
-              {[1, 3, 5, 10, 15, 20, 30].map((m) => <option key={m} value={m}>{m} minutos</option>)}
-            </select>
-          </div>
-        </div>
-        <div className="ct-field">
-          <label><Target size={14} /> Objetivo</label>
-          <textarea className="ct-area" value={f.objetivo} onChange={(e) => set("objetivo", e.target.value)} placeholder="O que o espectador deve sentir ou fazer ao final?" />
-        </div>
-        <div className="ct-field">
-          <label><Users size={14} /> Público-alvo</label>
-          <input className="ct-input" value={f.publico} onChange={(e) => set("publico", e.target.value)} placeholder="Quem assiste? Idade, interesses, nível..." />
-        </div>
-        <div className="ct-field">
-          <label><Share2 size={14} /> Plataformas</label>
-          <div className="ct-pchips">
-            {PLATFORMS.map((p) => (
-              <div key={p.id} className={`ct-pchip ${f.plataformas.includes(p.id) ? "on" : ""}`} onClick={() => togglePlat(p.id)}>
-                <PlatIcon id={p.id} size={16} /> {p.label}
+
+      <div className="pro-gen-grid">
+        <div className="pro-form-card">
+          <div className="pro-form-section">
+            <div className="pro-form-section__head">
+              <span className="pro-form-section__num">1</span>
+              <div><h3>Identidade do vídeo</h3><p>Título e tema que guiam toda a copy</p></div>
+            </div>
+            <div className="ct-field">
+              <label><Tag size={14} /> Título do projeto</label>
+              <input className="ct-input" value={f.titulo} onChange={(e) => set("titulo", e.target.value)} placeholder="Ex.: 5 erros que travam iniciantes no cubo mágico" />
+            </div>
+            <div className="ct-row">
+              <div className="ct-field">
+                <label><Sparkles size={14} /> Tema principal</label>
+                <input className="ct-input" value={f.tema} onChange={(e) => set("tema", e.target.value)} placeholder="Sobre o que é o vídeo" />
               </div>
-            ))}
+              <div className="ct-field">
+                <label><Gamepad2 size={14} /> Jogo (opcional)</label>
+                <input className="ct-input" value={f.jogo} onChange={(e) => set("jogo", e.target.value)} placeholder="Só se for conteúdo gamer" />
+              </div>
+            </div>
+            <div className="ct-field" style={{ marginBottom: 0 }}>
+              <label><Layers size={14} /> Nicho</label>
+              <input className="ct-input" value={f.nicho} onChange={(e) => set("nicho", e.target.value)} placeholder="Educação, fitness, finanças, igreja..." />
+            </div>
+          </div>
+
+          <div className="pro-form-section">
+            <div className="pro-form-section__head">
+              <span className="pro-form-section__num">2</span>
+              <div><h3>Estratégia</h3><p>Objetivo, público e duração do vídeo</p></div>
+            </div>
+            <div className="ct-field">
+              <label><Target size={14} /> Objetivo</label>
+              <textarea className="ct-area" value={f.objetivo} onChange={(e) => set("objetivo", e.target.value)} placeholder="O que o espectador deve sentir ou fazer ao final?" rows={3} />
+            </div>
+            <div className="ct-field">
+              <label><Users size={14} /> Público-alvo</label>
+              <input className="ct-input" value={f.publico} onChange={(e) => set("publico", e.target.value)} placeholder="Idade, interesses, nível de conhecimento..." />
+            </div>
+            <div className="ct-field" style={{ marginBottom: 0 }}>
+              <label><Clock size={14} /> Duração</label>
+              <div className="pro-duration-pills">
+                {[1, 3, 5, 10, 15, 20, 30].map((m) => (
+                  <button key={m} type="button" className={`pro-dur-pill ${f.duracao === m ? "on" : ""}`} onClick={() => set("duracao", m)}>{m} min</button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="pro-form-section">
+            <div className="pro-form-section__head">
+              <span className="pro-form-section__num">3</span>
+              <div><h3>Distribuição</h3><p>Onde você vai publicar</p></div>
+            </div>
+            <div className="ct-field" style={{ marginBottom: 0 }}>
+              <label><Share2 size={14} /> Plataformas</label>
+              <div className="ct-pchips">
+                {PLATFORMS.map((p) => (
+                  <div key={p.id} className={`ct-pchip ${f.plataformas.includes(p.id) ? "on" : ""}`} onClick={() => togglePlat(p.id)}>
+                    <PlatIcon id={p.id} size={16} /> {p.label}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="pro-cta-bar">
+            <Button
+              variant="primary"
+              style={{ width: "100%", justifyContent: "center" }}
+              onClick={start}
+              disabled={!f.titulo || !f.tema || f.plataformas.length === 0}
+            >
+              <Sparkles size={18} /> Gerar pacote completo com IA
+            </Button>
+            {(!f.titulo || !f.tema || !f.plataformas.length) && (
+              <p className="ct-sub" style={{ textAlign: "center", marginTop: 10, marginBottom: 0 }}>
+                Preencha título, tema e selecione ao menos uma rede.
+              </p>
+            )}
           </div>
         </div>
-        <Button
-          variant="primary"
-          style={{ width: "100%", justifyContent: "center", marginTop: 6 }}
-          onClick={start}
-          disabled={!f.titulo || !f.tema || f.plataformas.length === 0}
-        >
-          <Sparkles size={16} /> Gerar conteúdo
-        </Button>
-      </Card>
-    </>
+
+        <aside className="pro-aside">
+          <div className="pro-aside-card">
+            <h4>O que você recebe</h4>
+            <ul className="pro-checklist">
+              <li><Check size={16} /> Roteiro com gancho, blocos e CTA</li>
+              <li><Check size={16} /> 18 títulos (virais, SEO e CTR)</li>
+              <li><Check size={16} /> Hashtags por nicho e por rede</li>
+              <li><Check size={16} /> Descrições adaptadas a cada plataforma</li>
+            </ul>
+          </div>
+          <div className="pro-aside-card" style={{ background: "rgba(20,22,30,0.9)", borderColor: "var(--ds-border)" }}>
+            <h4>Dica para marketing</h4>
+            <p style={{ margin: 0, fontSize: 13, color: "var(--ds-text-muted)", lineHeight: 1.55 }}>
+              Quanto mais específico o público e o objetivo, melhor a IA calibra tom, ganchos e CTAs para conversão.
+            </p>
+          </div>
+        </aside>
+      </div>
+    </div>
   );
 }
 
 /* ----------------------------- Library ----------------------------- */
 function Library({ projects, onOpen, onDup, onDel, onNew }) {
   return (
-    <>
-      <div className="ct-head">
-        <div><h1 className="ct-h1">Biblioteca</h1><p className="ct-sub">Todos os seus projetos, salvos e prontos para reuso.</p></div>
+    <div className="pro-page">
+      <div className="pro-page-header">
+        <div>
+          <div className="pro-kicker">Arquivo</div>
+          <h1 className="pro-title">Biblioteca</h1>
+          <p className="pro-lead">Todos os pacotes de conteúdo salvos, prontos para editar e republicar.</p>
+        </div>
         <Button variant="primary" onClick={onNew}><Plus size={16} /> Novo conteúdo</Button>
       </div>
       {projects.length === 0 ? (
@@ -911,28 +1031,32 @@ function Library({ projects, onOpen, onDup, onDel, onNew }) {
           description="Gere seu primeiro conteúdo para começar a produzir para todas as redes."
           action={<Button variant="primary" onClick={onNew}><Sparkles size={16} /> Criar primeiro conteúdo</Button>}
         />
-      ) : projects.map((p) => (
-        <div key={p.id} className="ct-projrow">
-          <div className="ct-projmeta" onClick={() => onOpen(p.id)} style={{ cursor: "pointer" }}>
-            <b>{p.titulo}</b>
-            <small>{p.nicho} · {new Date(p.createdAt).toLocaleDateString("pt-BR")}</small>
-            <div className="ct-mini">
-              <span className="ct-pill">{p.duracao} min</span>
-              {(p.plataformas || []).map((x) => (
-                <span key={x} className="ct-pill ct-pill-plat">
-                  <PlatIcon id={x} size={11} /> {PLAT[x]?.label}
-                </span>
-              ))}
-            </div>
-          </div>
-          <div style={{ display: "flex", gap: 7 }}>
-            <button className="ct-icobtn" title="Duplicar" onClick={() => onDup(p.id)}><Copy size={15} /></button>
-            <button className="ct-icobtn" title="Baixar .md" onClick={() => download(`${p.titulo}.md`, buildMarkdown(p))}><Download size={15} /></button>
-            <button className="ct-icobtn" title="Excluir" onClick={() => onDel(p.id)}><Trash2 size={15} /></button>
-          </div>
+      ) : (
+        <div className="pro-proj-grid">
+          {projects.map((p) => (
+            <article key={p.id} className="pro-proj-card" onClick={() => onOpen(p.id)}>
+              <div className="pro-proj-card__top">
+                <h4>{p.titulo}</h4>
+                <span className="ct-pill">{p.duracao} min</span>
+              </div>
+              <p className="pro-proj-card__meta">{p.nicho || p.tema} · {new Date(p.createdAt).toLocaleDateString("pt-BR")}</p>
+              <div className="ct-mini">
+                {(p.plataformas || []).map((x) => (
+                  <span key={x} className="ct-pill ct-pill-plat">
+                    <PlatIcon id={x} size={11} /> {PLAT[x]?.label}
+                  </span>
+                ))}
+              </div>
+              <div className="pro-proj-card__actions" onClick={(e) => e.stopPropagation()}>
+                <button className="ct-icobtn" title="Duplicar" onClick={() => onDup(p.id)}><Copy size={15} /></button>
+                <button className="ct-icobtn" title="Baixar .md" onClick={() => download(`${p.titulo}.md`, buildMarkdown(p))}><Download size={15} /></button>
+                <button className="ct-icobtn" title="Excluir" onClick={() => onDel(p.id)}><Trash2 size={15} /></button>
+              </div>
+            </article>
+          ))}
         </div>
-      ))}
-    </>
+      )}
+    </div>
   );
 }
 
@@ -1017,24 +1141,27 @@ function Results({ p, copy, ping, onUpdate }) {
       ];
 
   return (
-    <>
-      <div className="ct-head">
-        <div>
-          <h1 className="ct-h1">{p.titulo}</h1>
-          <p className="ct-sub">{p.tema} · {p.duracao} min · {(p.plataformas || []).map((x) => PLAT[x]?.label).join(" · ")}</p>
-        </div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
-          <button className={`ct-btn sm ${editOpen ? "primary" : ""}`} onClick={() => setEditOpen((v) => !v)}>
-            <Pencil size={14} /> {editOpen ? "Fechar" : "Alterar"}
-          </button>
-          <button className="ct-btn sm" onClick={() => { copy(buildMarkdown(p), "Markdown copiado"); }}><Copy size={14} /> Copiar</button>
-          <button className="ct-btn sm" onClick={() => download(`${p.titulo}.md`, buildMarkdown(p))}><Download size={14} /> .md</button>
-          <button className="ct-btn sm" onClick={() => download(`${p.titulo}.txt`, buildMarkdown(p))}><Download size={14} /> .txt</button>
+    <div className="pro-page">
+      <div className="pro-results-hero">
+        <div className="pro-page-header" style={{ marginBottom: 0 }}>
+          <div>
+            <div className="pro-kicker">Pacote pronto</div>
+            <h1 className="pro-title" style={{ fontSize: "1.75rem" }}>{p.titulo}</h1>
+            <p className="pro-lead">{p.tema} · {p.duracao} min · {(p.plataformas || []).map((x) => PLAT[x]?.label).join(" · ")}</p>
+          </div>
+          <div className="pro-toolbar">
+            <Button variant={editOpen ? "primary" : "default"} size="sm" onClick={() => setEditOpen((v) => !v)}>
+              <Pencil size={14} /> {editOpen ? "Fechar" : "Alterar"}
+            </Button>
+            <Button size="sm" onClick={() => { copy(buildMarkdown(p), "Markdown copiado"); }}><Copy size={14} /> Copiar</Button>
+            <Button size="sm" onClick={() => download(`${p.titulo}.md`, buildMarkdown(p))}><Download size={14} /> .md</Button>
+            <Button size="sm" onClick={() => download(`${p.titulo}.txt`, buildMarkdown(p))}><Download size={14} /> .txt</Button>
+          </div>
         </div>
       </div>
 
-      <div className="ct-platswitch">
-        <span className="ct-platswitch-lbl">Rede social:</span>
+      <div className="pro-plat-bar">
+        <span className="pro-plat-bar__lbl">Rede social</span>
         {PLATFORMS.map((plat) => (
           <div
             key={plat.id}
@@ -1048,14 +1175,14 @@ function Results({ p, copy, ping, onUpdate }) {
       </div>
 
       {activePlat && (
-        <div className="ct-platbadge">
+        <div className="pro-plat-hint">
           <PlatIcon id={activePlat} size={14} />
           Modo {PLAT[activePlat]?.label} — {PLAT_TITLE_HINT[activePlat]}
         </div>
       )}
 
       {editOpen && (
-        <div className="ct-editpanel">
+        <div className="pro-edit-drawer">
           <h3>Alterar projeto</h3>
           <p className="ct-sub">Ajuste os campos ou regenere só as partes que quiser. O conteúdo atual fica guardado no histórico.</p>
           <div className="ct-field">
@@ -1127,104 +1254,112 @@ function Results({ p, copy, ping, onUpdate }) {
       </div>
 
       {tab === "roteiro" && c.roteiro && (
-        <div style={{ maxWidth: 760 }}>
-          <div className="ct-card" style={{ marginBottom: 18, borderColor: "rgba(255,91,110,.3)" }}>
-            <div className="ct-tltime" style={{ color: "var(--coral)", marginBottom: 8 }}><Radio size={13} /> GANCHO · primeiros segundos</div>
-            <p style={{ margin: 0, fontSize: 15, lineHeight: 1.6, fontFamily: "var(--disp)", fontWeight: 500 }}>{c.roteiro.gancho}</p>
-          </div>
-          <p style={{ color: "var(--muted)", fontSize: 13.5, lineHeight: 1.65, marginBottom: 24 }}><b style={{ color: "var(--text)" }}>Introdução. </b>{c.roteiro.introducao}</p>
-          <p className="ct-sectlbl">Desenvolvimento · minuto a minuto</p>
-          <div className="ct-tl">
-            {(c.roteiro.blocos || []).map((b, i) => (
-              <div key={i} className={`ct-tlitem ${i === 0 ? "hook" : ""}`}>
-                <div className="ct-tldot" />
-                <div className="ct-tltime">{b.tempo} {i === 0 && <span className="ct-rec">REC</span>}</div>
-                <h4 className="ct-tltitle">{b.titulo}</h4>
-                <p className="ct-tlbody">{b.fala}</p>
-              </div>
-            ))}
-          </div>
-          <div className="ct-card" style={{ marginTop: 8, background: "var(--bg2)" }}>
-            <div className="ct-sectlbl" style={{ marginBottom: 8 }}>Chamada para ação (CTA)</div>
-            <p style={{ margin: 0, color: "var(--muted)", fontSize: 13.5, lineHeight: 1.6 }}>{c.roteiro.cta}</p>
+        <div className="pro-content">
+          <div className="pro-content__inner">
+            <div className="pro-glass-card pro-glass-card--accent">
+              <div className="pro-hook-lbl"><Radio size={13} /> Gancho · primeiros segundos</div>
+              <p className="pro-hook-text">{c.roteiro.gancho}</p>
+            </div>
+            <p className="pro-intro"><b>Introdução. </b>{c.roteiro.introducao}</p>
+            <p className="pro-sect-lbl">Desenvolvimento · minuto a minuto</p>
+            <div className="pro-timeline">
+              {(c.roteiro.blocos || []).map((b, i) => (
+                <div key={i} className={`pro-tl-item ${i === 0 ? "pro-tl-item--hook" : ""}`}>
+                  <div className="pro-tl-dot" />
+                  <div className="pro-tl-time">{b.tempo} {i === 0 && <span className="pro-rec">REC</span>}</div>
+                  <h4 className="pro-tl-title">{b.titulo}</h4>
+                  <p className="pro-tl-body">{b.fala}</p>
+                </div>
+              ))}
+            </div>
+            <div className="pro-glass-card" style={{ marginTop: 8 }}>
+              <p className="pro-sect-lbl" style={{ marginBottom: 10 }}>Chamada para ação</p>
+              <p style={{ margin: 0, color: "var(--ds-text-muted)", fontSize: 14, lineHeight: 1.7 }}>{c.roteiro.cta}</p>
+            </div>
           </div>
         </div>
       )}
 
       {tab === "titulos" && c.titulos && (
-        <div style={{ maxWidth: 860 }}>
-          {titleSections.map(([k, lbl, sub], idx) => (
-            <div key={k} className={`ct-card ${idx === 0 ? "ct-focuscard" : ""}`} style={{ marginBottom: 16 }}>
-              <p className="ct-sectlbl" style={{ marginBottom: 4 }}>
-                {lbl}
-                {sub && <span style={{ textTransform: "none", letterSpacing: 0, color: idx === 0 ? "#2ed573" : "var(--faint)", marginLeft: 6 }}>{idx === 0 ? `★ ideal para ${PLAT[activePlat]?.label}: ${sub}` : sub}</span>}
-              </p>
-              {(c.titulos[k] || []).map((t, i) => (
-                <div key={i} className="ct-titrow">
-                  <span className="ct-titnum">{String(i + 1).padStart(2, "0")}</span>
-                  <span className="ct-tittxt">{t.t}</span>
-                  <div className="ct-metrics">
-                    <Metric label="SEO" v={t.seo} /><Metric label="Eng" v={t.eng} /><Metric label="CTR" v={t.ctr} />
+        <div className="pro-content">
+          <div className="pro-content__inner" style={{ maxWidth: 920 }}>
+            {titleSections.map(([k, lbl, sub], idx) => (
+              <div key={k} className={`pro-glass-card ${idx === 0 ? "pro-glass-card--focus" : ""}`}>
+                <p className="pro-sect-lbl" style={{ marginBottom: 4 }}>
+                  {lbl}
+                  {sub && <span style={{ textTransform: "none", letterSpacing: 0, color: idx === 0 ? "#2ed573" : "var(--ds-text-faint)", marginLeft: 6, fontWeight: 500 }}>{idx === 0 ? `★ ideal para ${PLAT[activePlat]?.label}: ${sub}` : sub}</span>}
+                </p>
+                {(c.titulos[k] || []).map((t, i) => (
+                  <div key={i} className="pro-title-row">
+                    <span className="pro-title-num">{String(i + 1).padStart(2, "0")}</span>
+                    <span className="pro-title-text">{t.t}</span>
+                    <div className="pro-metrics">
+                      <Metric label="SEO" v={t.seo} /><Metric label="Eng" v={t.eng} /><Metric label="CTR" v={t.ctr} />
+                    </div>
+                    <button className="ct-icobtn" onClick={() => copy(t.t)}><Copy size={14} /></button>
                   </div>
-                  <button className="ct-icobtn" onClick={() => copy(t.t)}><Copy size={14} /></button>
-                </div>
-              ))}
-            </div>
-          ))}
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
       {tab === "hashtags" && c.hashtags && (
-        <div style={{ maxWidth: 760 }}>
-          {c.hashtags._focusTags?.length > 0 && (
-            <div className="ct-card ct-focuscard">
-              <p className="ct-sectlbl">Hashtags para {PLAT[activePlat]?.label}</p>
-              <div className="ct-tags">
-                {c.hashtags._focusTags.map((h, i) => <span key={i} className="ct-tagchip" onClick={() => copy(h)}>{h}</span>)}
-              </div>
-            </div>
-          )}
-          {[["top", "Top"], ["nicho", "Nicho"], ["virais", "Virais"]].map(([k, lbl]) =>
-            c.hashtags[k] ? (
-              <div key={k} className="ct-card" style={{ marginBottom: 14 }}>
-                <p className="ct-sectlbl">{lbl}</p>
-                <div className="ct-tags">
-                  {c.hashtags[k].map((h, i) => <span key={i} className="ct-tagchip" onClick={() => copy(h)}>{h}</span>)}
+        <div className="pro-content">
+          <div className="pro-content__inner">
+            {c.hashtags._focusTags?.length > 0 && (
+              <div className="pro-glass-card pro-glass-card--focus">
+                <p className="pro-sect-lbl">Hashtags para {PLAT[activePlat]?.label}</p>
+                <div className="pro-tags">
+                  {c.hashtags._focusTags.map((h, i) => <span key={i} className="pro-tag" onClick={() => copy(h)}>{h}</span>)}
                 </div>
               </div>
-            ) : null
-          )}
-          {c.hashtags.plataformas && !c.hashtags._focusPlat && (
-            <div className="ct-card">
-              <p className="ct-sectlbl">Por plataforma</p>
-              {Object.entries(c.hashtags.plataformas).map(([k, arr]) => (
-                <div key={k} style={{ marginBottom: 12 }}>
-                  <div className="ct-platname" style={{ marginBottom: 8, fontSize: 13 }}>
-                    <PlatIcon id={k} size={15} /> {PLAT[k]?.label || k}
+            )}
+            {[["top", "Top"], ["nicho", "Nicho"], ["virais", "Virais"]].map(([k, lbl]) =>
+              c.hashtags[k] ? (
+                <div key={k} className="pro-glass-card">
+                  <p className="pro-sect-lbl">{lbl}</p>
+                  <div className="pro-tags">
+                    {c.hashtags[k].map((h, i) => <span key={i} className="pro-tag" onClick={() => copy(h)}>{h}</span>)}
                   </div>
-                  <div className="ct-tags">{arr.map((h, i) => <span key={i} className="ct-tagchip" onClick={() => copy(h)}>{h}</span>)}</div>
                 </div>
-              ))}
-            </div>
-          )}
+              ) : null
+            )}
+            {c.hashtags.plataformas && !c.hashtags._focusPlat && (
+              <div className="pro-glass-card">
+                <p className="pro-sect-lbl">Por plataforma</p>
+                {Object.entries(c.hashtags.plataformas).map(([k, arr]) => (
+                  <div key={k} style={{ marginBottom: 16 }}>
+                    <div className="pro-desc-name" style={{ marginBottom: 10, fontSize: 13 }}>
+                      <PlatIcon id={k} size={15} /> {PLAT[k]?.label || k}
+                    </div>
+                    <div className="pro-tags">{arr.map((h, i) => <span key={i} className="pro-tag" onClick={() => copy(h)}>{h}</span>)}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
       {tab === "descricoes" && c.descricoes && (
-        <div style={{ maxWidth: 760 }}>
-          {Object.entries(c.descricoes).map(([k, v]) =>
-            v ? (
-              <div key={k} className="ct-platcard">
-                <div className="ct-plattop">
-                  <div className="ct-platname"><PlatIcon id={k} size={16} /> {PLAT[k]?.label || k}</div>
-                  <button className="ct-icobtn" onClick={() => copy(v, `Descrição ${PLAT[k]?.label} copiada`)}><Copy size={14} /></button>
+        <div className="pro-content">
+          <div className="pro-content__inner">
+            {Object.entries(c.descricoes).map(([k, v]) =>
+              v ? (
+                <div key={k} className="pro-desc-card">
+                  <div className="pro-desc-top">
+                    <div className="pro-desc-name"><PlatIcon id={k} size={16} /> {PLAT[k]?.label || k}</div>
+                    <button className="ct-icobtn" onClick={() => copy(v, `Descrição ${PLAT[k]?.label} copiada`)}><Copy size={14} /></button>
+                  </div>
+                  <div className="pro-desc-body">{v}</div>
                 </div>
-                <div className="ct-platbody">{v}</div>
-              </div>
-            ) : null
-          )}
+              ) : null
+            )}
+          </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
