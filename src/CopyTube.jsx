@@ -30,17 +30,16 @@ const STYLE = `
 /* video background */
 .ct-vidbg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background:#0A0B0F}
 .ct-vidbg-frame{position:absolute;inset:0;overflow:hidden}
-.ct-vidbg-player{
+.ct-vidbg-video{
   position:absolute;top:50%;left:50%;
-  width:max(120vw,200vh);height:max(67.5vw,112.5vh);
-  min-width:2560px;min-height:1440px;
-  transform:translate(-50%,-50%) scale(1.42);
+  width:max(100vw,177.78vh);height:max(56.25vw,100vh);
+  min-width:100%;min-height:100%;
+  object-fit:cover;
+  transform:translate(-50%,-50%);
   pointer-events:none;
 }
-.ct-vidbg-player iframe{width:100%;height:100%;border:0;pointer-events:none}
-.ct-vidbg-shield{position:absolute;inset:0;z-index:2;background:transparent}
 .ct-vidbg-overlay{
-  position:absolute;inset:0;z-index:3;
+  position:absolute;inset:0;z-index:1;
   background:linear-gradient(160deg,rgba(10,11,15,.68) 0%,rgba(10,11,15,.84) 55%,rgba(10,11,15,.78) 100%);
 }
 
@@ -222,90 +221,43 @@ function PlatIcon({ id, size = 16, className = "" }) {
 const STORAGE_KEY = "copytube-projects";
 const LOGO_SRC = "/copytube-logo.png";
 const LOGO_WIDTH = 1024;
-const BG_VIDEO_ID = "Q8KfV7jd8s8";
+const BG_VIDEO_SRC = "/bg-video.mp4";
 
 function VideoBackground() {
-  const mountRef = useRef(null);
-  const playerRef = useRef(null);
-  const tickRef = useRef(null);
+  const vidRef = useRef(null);
 
   useEffect(() => {
-    const mountId = "ct-yt-bg-player";
-    if (mountRef.current) mountRef.current.id = mountId;
-
-    const keepPlaying = (player) => {
-      const state = player.getPlayerState?.();
-      if (state === 0) {
-        player.seekTo(0, true);
-        player.playVideo();
-      } else if (state === 2 || state === 5) {
-        player.playVideo();
-      }
-    };
-
-    const createPlayer = () => {
-      playerRef.current = new window.YT.Player(mountId, {
-        host: "https://www.youtube-nocookie.com",
-        videoId: BG_VIDEO_ID,
-        playerVars: {
-          autoplay: 1,
-          mute: 1,
-          controls: 0,
-          modestbranding: 1,
-          rel: 0,
-          iv_load_policy: 3,
-          disablekb: 1,
-          fs: 0,
-          playsinline: 1,
-          loop: 1,
-          playlist: BG_VIDEO_ID,
-          cc_load_policy: 0,
-          enablejsapi: 1,
-          autohide: 1,
-          origin: window.location.origin,
-        },
-        events: {
-          onReady: (e) => {
-            e.target.mute();
-            e.target.playVideo();
-            ["hd2160", "hd1440", "hd1080", "highres", "hd720"].forEach((q) => {
-              try { e.target.setPlaybackQuality(q); } catch (_) {}
-            });
-            tickRef.current = setInterval(() => keepPlaying(e.target), 1200);
-          },
-          onStateChange: (e) => keepPlaying(e.target),
-        },
-      });
-    };
-
-    if (window.YT?.Player) {
-      createPlayer();
-    } else {
-      const prev = window.onYouTubeIframeAPIReady;
-      window.onYouTubeIframeAPIReady = () => {
-        if (typeof prev === "function") prev();
-        createPlayer();
-      };
-      if (!document.getElementById("youtube-iframe-api")) {
-        const tag = document.createElement("script");
-        tag.id = "youtube-iframe-api";
-        tag.src = "https://www.youtube.com/iframe_api";
-        document.head.appendChild(tag);
-      }
-    }
-
+    const v = vidRef.current;
+    if (!v) return;
+    v.muted = true;
+    const resume = () => { v.play().catch(() => {}); };
+    resume();
+    v.addEventListener("ended", resume);
+    const tick = setInterval(() => { if (v.paused) resume(); }, 800);
     return () => {
-      clearInterval(tickRef.current);
-      try { playerRef.current?.destroy?.(); } catch (_) {}
+      clearInterval(tick);
+      v.removeEventListener("ended", resume);
     };
   }, []);
 
   return (
     <div className="ct-vidbg" aria-hidden="true">
       <div className="ct-vidbg-frame">
-        <div ref={mountRef} className="ct-vidbg-player" />
+        <video
+          ref={vidRef}
+          className="ct-vidbg-video"
+          src={BG_VIDEO_SRC}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          disablePictureInPicture
+          controls={false}
+          controlsList="nodownload noplaybackrate noremoteplayback nofullscreen"
+          tabIndex={-1}
+        />
       </div>
-      <div className="ct-vidbg-shield" />
       <div className="ct-vidbg-overlay" />
     </div>
   );
