@@ -6,186 +6,7 @@ import {
   ChevronRight, Layers, Wand2, AlertTriangle, Pencil, RefreshCw, RotateCcw,
   Youtube, Instagram, Linkedin, Facebook, GalleryHorizontal, ExternalLink
 } from "lucide-react";
-
-/* ------------------------------------------------------------------ */
-/*  Theme                                                             */
-/* ------------------------------------------------------------------ */
-const STYLE = `
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;450;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
-
-.ct-root{
-  --bg:#0A0B0F; --bg2:#0E1017; --surface:#14161E; --surface2:#1A1D27;
-  --border:#242834; --border2:#30353F;
-  --text:#ECEEF3; --muted:#8A90A0; --faint:#5A5F6E;
-  --violet:#7B5CFF; --violet2:#9A82FF; --mag:#C13BFF; --coral:#FF5B6E;
-  --grad:linear-gradient(135deg,#7B5CFF 0%,#C13BFF 52%,#FF5B6E 100%);
-  --disp:'Space Grotesk',sans-serif; --body:'Inter',sans-serif; --mono:'JetBrains Mono',monospace;
-  font-family:var(--body); color:var(--text); background:var(--bg);
-  height:100%; min-height:100vh; -webkit-font-smoothing:antialiased; font-size:14px;
-  position:relative; isolation:isolate;
-}
-.ct-root *{box-sizing:border-box}
-.ct-root::selection{background:rgba(123,92,255,.35)}
-
-/* video background */
-.ct-vidbg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background:#0A0B0F}
-.ct-vidbg-frame{position:absolute;inset:0;overflow:hidden}
-.ct-vidbg-video{
-  position:absolute;top:50%;left:50%;
-  width:max(100vw,177.78vh);height:max(56.25vw,100vh);
-  min-width:100%;min-height:100%;
-  object-fit:cover;
-  transform:translate(-50%,-50%);
-  pointer-events:none;
-}
-.ct-vidbg-overlay{
-  position:absolute;inset:0;z-index:1;
-  background:linear-gradient(160deg,rgba(10,11,15,.68) 0%,rgba(10,11,15,.84) 55%,rgba(10,11,15,.78) 100%);
-}
-
-/* shell */
-.ct-shell{display:grid;grid-template-columns:248px 1fr;min-height:100vh;position:relative;z-index:1}
-.ct-side{background:rgba(14,16,23,.78);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-right:1px solid rgba(36,40,52,.85);padding:20px 14px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh}
-.ct-brand{display:flex;align-items:center;padding:0 6px 14px}
-.ct-logo{display:block;height:auto;object-fit:contain;max-width:100%;background:transparent}
-.ct-logo-side{width:200px;max-height:110px}
-.ct-logo-foot{width:32px;height:32px;object-fit:contain;flex-shrink:0}
-.ct-logo-mark{width:44px;height:44px;object-fit:contain}
-.ct-navlbl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);padding:14px 10px 6px;font-weight:600}
-.ct-nav{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:9px;color:var(--muted);cursor:pointer;font-weight:500;border:1px solid transparent;transition:.15s}
-.ct-nav:hover{color:var(--text);background:var(--surface)}
-.ct-nav.on{color:var(--text);background:var(--surface);border-color:var(--border2)}
-.ct-nav.on svg{color:var(--violet2)}
-.ct-nav.ct-ext{text-decoration:none}
-.ct-nav.ct-ext svg:last-child{margin-left:auto;opacity:.45;width:14px;height:14px}
-.ct-side-foot{margin-top:auto;padding:12px 10px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px}
-.ct-avatar{width:28px;height:28px;border-radius:50%;background:var(--surface2);border:1px solid var(--border2);display:grid;place-items:center;font-family:var(--disp);font-weight:600;color:var(--text);flex-shrink:0}
-.ct-usermeta{flex:1;min-width:0}
-.ct-usermeta b{display:block;color:var(--text);font-weight:600;font-size:12.5px}
-.ct-usermeta small{display:block;color:var(--muted);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
-/* main */
-.ct-main{padding:32px 40px 60px;max-width:1180px;width:100%}
-.ct-h1{font-family:var(--disp);font-size:26px;font-weight:600;letter-spacing:-.02em;margin:0}
-.ct-sub{color:var(--muted);margin:6px 0 0;font-size:13px}
-.ct-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px;gap:20px;flex-wrap:wrap}
-
-/* cards */
-.ct-grid{display:grid;gap:16px}
-.ct-card{background:rgba(20,22,30,.86);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(36,40,52,.9);border-radius:14px;padding:18px}
-.ct-stat{display:flex;flex-direction:column;gap:10px}
-.ct-stat .ct-ico{width:34px;height:34px;border-radius:9px;background:var(--surface2);border:1px solid var(--border2);display:grid;place-items:center;color:var(--violet2)}
-.ct-stat .ct-num{font-family:var(--disp);font-size:30px;font-weight:600;letter-spacing:-.02em;line-height:1}
-.ct-stat .ct-lbl{color:var(--muted);font-size:12.5px}
-
-/* buttons */
-.ct-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:10px;font-weight:600;font-size:13px;cursor:pointer;border:1px solid var(--border2);background:var(--surface);color:var(--text);transition:.15s;font-family:var(--body)}
-.ct-btn:hover{background:var(--surface2)}
-.ct-btn.primary{background:var(--grad);border:none;color:#fff;box-shadow:0 6px 20px rgba(123,92,255,.35)}
-.ct-btn.primary:hover{filter:brightness(1.08)}
-.ct-btn:disabled{opacity:.5;cursor:not-allowed}
-.ct-btn.sm{padding:7px 11px;font-size:12px;border-radius:8px}
-.ct-icobtn{display:grid;place-items:center;width:32px;height:32px;border-radius:8px;border:1px solid var(--border2);background:var(--surface);color:var(--muted);cursor:pointer}
-.ct-icobtn:hover{color:var(--text);background:var(--surface2)}
-
-/* form */
-.ct-field{display:flex;flex-direction:column;gap:7px;margin-bottom:16px}
-.ct-field label{font-size:12.5px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:7px}
-.ct-field label svg{color:var(--faint)}
-.ct-input,.ct-select,.ct-area{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;color:var(--text);font-family:var(--body);font-size:13.5px;width:100%;transition:.15s}
-.ct-input:focus,.ct-select:focus,.ct-area:focus{outline:none;border-color:var(--violet);box-shadow:0 0 0 3px rgba(123,92,255,.15)}
-.ct-input::placeholder,.ct-area::placeholder{color:var(--faint)}
-.ct-area{resize:vertical;min-height:64px}
-.ct-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.ct-pchips{display:flex;flex-wrap:wrap;gap:8px}
-.ct-pchip{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:9px;border:1px solid var(--border);background:var(--bg2);color:var(--muted);cursor:pointer;font-size:12.5px;font-weight:500;transition:.2s ease;user-select:none}
-.ct-pchip:hover{color:var(--text);border-color:var(--border2);background:var(--surface)}
-.ct-pchip .dot{width:8px;height:8px;border-radius:50%;transition:box-shadow .2s ease}
-.ct-picon{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;line-height:0}
-.ct-picon svg{display:block}
-.ct-pchip.on .ct-picon{filter:drop-shadow(0 0 5px currentColor)}
-.ct-pchip.on{color:#d7ffe4;border-color:#2ed573;background:rgba(46,213,115,.14);box-shadow:0 0 0 1px rgba(46,213,115,.55),0 0 14px rgba(46,213,115,.45),inset 0 0 10px rgba(46,213,115,.12)}
-.ct-pchip.on .dot{box-shadow:0 0 10px currentColor,0 0 4px #2ed573}
-
-/* tabs */
-.ct-tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:24px;flex-wrap:wrap}
-.ct-tab{display:flex;align-items:center;gap:8px;padding:11px 14px;color:var(--muted);cursor:pointer;font-weight:500;font-size:13px;border-bottom:2px solid transparent;margin-bottom:-1px;transition:.15s}
-.ct-tab:hover{color:var(--text)}
-.ct-tab.on{color:var(--text);border-bottom-color:var(--mag)}
-
-/* timeline (signature) */
-.ct-tl{position:relative;padding-left:28px}
-.ct-tl:before{content:"";position:absolute;left:7px;top:8px;bottom:8px;width:2px;background:linear-gradient(var(--violet),var(--mag),var(--coral))}
-.ct-tlitem{position:relative;padding:0 0 22px 14px}
-.ct-tldot{position:absolute;left:-28px;top:3px;width:16px;height:16px;border-radius:50%;background:var(--surface2);border:2px solid var(--violet2);z-index:1}
-.ct-tlitem.hook .ct-tldot{background:var(--coral);border-color:var(--coral);box-shadow:0 0 0 4px rgba(255,91,110,.18)}
-.ct-tltime{font-family:var(--mono);font-size:12px;color:var(--violet2);font-weight:500;display:flex;align-items:center;gap:8px;margin-bottom:5px}
-.ct-tlitem.hook .ct-tltime{color:var(--coral)}
-.ct-rec{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;background:rgba(255,91,110,.15);color:var(--coral);padding:2px 6px;border-radius:5px;font-weight:500}
-.ct-tltitle{font-family:var(--disp);font-weight:600;font-size:14.5px;margin:0 0 4px}
-.ct-tlbody{color:var(--muted);font-size:13.5px;line-height:1.62;margin:0}
-
-/* title list */
-.ct-titrow{display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--border)}
-.ct-titrow:last-child{border:none}
-.ct-titnum{font-family:var(--mono);font-size:11px;color:var(--faint);width:20px}
-.ct-tittxt{flex:1;font-size:13.5px;font-weight:450}
-.ct-metrics{display:flex;gap:14px;flex-shrink:0}
-.ct-metric{display:flex;flex-direction:column;gap:4px;align-items:center;width:46px}
-.ct-metric .mlbl{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
-.ct-bar{height:4px;width:100%;background:var(--border);border-radius:3px;overflow:hidden}
-.ct-bar i{display:block;height:100%;border-radius:3px}
-
-/* hashtags */
-.ct-tags{display:flex;flex-wrap:wrap;gap:8px}
-.ct-tagchip{font-family:var(--mono);font-size:12px;background:var(--bg2);border:1px solid var(--border);color:var(--violet2);padding:6px 11px;border-radius:8px;cursor:pointer;transition:.15s}
-.ct-tagchip:hover{border-color:var(--violet);color:var(--text)}
-
-/* platform desc */
-.ct-platcard{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px}
-.ct-plattop{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--border)}
-.ct-platname{display:flex;align-items:center;gap:9px;font-family:var(--disp);font-weight:600;font-size:14px}
-.ct-platbody{padding:16px;color:var(--muted);font-size:13.5px;line-height:1.65;white-space:pre-wrap}
-
-/* generation progress */
-.ct-gen{display:flex;flex-direction:column;gap:2px;max-width:420px;margin:40px auto;text-align:left}
-.ct-step{display:flex;align-items:center;gap:13px;padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);transition:.2s}
-.ct-step.active{border-color:var(--violet);box-shadow:0 0 0 3px rgba(123,92,255,.12)}
-.ct-step .sico{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:var(--surface2);color:var(--faint);flex-shrink:0}
-.ct-step.active .sico{background:rgba(123,92,255,.15);color:var(--violet2)}
-.ct-step.done .sico{background:rgba(46,213,115,.12);color:#2ed573}
-.ct-step b{font-size:13.5px;display:block;font-weight:600}
-.ct-step small{color:var(--muted);font-size:12px}
-.ct-spin{animation:spin 1s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* misc */
-.ct-empty{text-align:center;padding:60px 20px;color:var(--muted)}
-.ct-empty .eico{width:54px;height:54px;border-radius:14px;background:var(--surface);border:1px solid var(--border);display:grid;place-items:center;margin:0 auto 16px;color:var(--violet2)}
-.ct-projrow{display:flex;align-items:center;gap:16px;padding:16px;border:1px solid rgba(36,40,52,.9);border-radius:12px;background:rgba(20,22,30,.84);backdrop-filter:blur(8px);margin-bottom:10px;cursor:pointer;transition:.15s}
-.ct-projrow:hover{border-color:var(--border2);background:var(--surface2)}
-.ct-projmeta{flex:1;min-width:0}
-.ct-projmeta b{font-family:var(--disp);font-weight:600;font-size:14.5px;display:block}
-.ct-projmeta small{color:var(--muted);font-size:12px}
-.ct-mini{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-.ct-pill{font-size:10.5px;color:var(--muted);background:var(--bg2);border:1px solid var(--border);padding:2px 8px;border-radius:6px}
-.ct-pill-plat{display:inline-flex;align-items:center;gap:5px}
-.ct-banner{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:10px;background:rgba(255,91,110,.1);border:1px solid rgba(255,91,110,.3);color:#ffb3bc;font-size:13px;margin-bottom:18px}
-.ct-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:11px 18px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 12px 40px rgba(0,0,0,.5);display:flex;align-items:center;gap:9px;z-index:99}
-.ct-sectlbl{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:600;margin:0 0 12px}
-.ct-platswitch{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:18px}
-.ct-platswitch-lbl{font-size:12px;color:var(--muted);font-weight:500;margin-right:4px}
-.ct-platbadge{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:#2ed573;background:rgba(46,213,115,.1);border:1px solid rgba(46,213,115,.25);padding:4px 10px;border-radius:20px;margin-bottom:14px}
-.ct-editpanel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;max-width:760px}
-.ct-editpanel h3{font-family:var(--disp);font-size:16px;font-weight:600;margin:0 0 4px}
-.ct-editpanel .ct-sub{margin-bottom:16px}
-.ct-regenpick{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
-.ct-regenpick label{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);cursor:pointer;padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg2)}
-.ct-regenpick input{accent-color:var(--violet)}
-.ct-editactions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
-.ct-focuscard{border-color:rgba(123,92,255,.35)!important;background:rgba(123,92,255,.06)!important;margin-bottom:16px}
-@media(max-width:820px){.ct-shell{grid-template-columns:1fr}.ct-side{display:none}.ct-main{padding:24px 18px 60px}.ct-row{grid-template-columns:1fr}}
-`;
+import { Button, Navbar, Card, EmptyState } from "./components/ui/index.js";
 
 /* ------------------------------------------------------------------ */
 /*  Constants                                                         */
@@ -803,6 +624,7 @@ export default function CopyTube() {
   const [projects, setProjects] = useState(loadProjects);
   const [activeId, setActiveId] = useState(null);
   const [toast, setToast] = useState("");
+  const [mobileOpen, setMobileOpen] = useState(false);
   const toastT = useRef(null);
 
   useEffect(() => {
@@ -831,13 +653,21 @@ export default function CopyTube() {
     ping("Projeto duplicado");
   };
 
+  const navTo = (id) => {
+    setView(id);
+    if (id !== "results") setActiveId(id === "library" ? activeId : null);
+    setMobileOpen(false);
+  };
+
+  const viewTitle = { dashboard: "Dashboard", generator: "Gerar conteúdo", library: "Biblioteca", results: "Resultado" }[view] || "CopyTube";
+
   return (
-    <div className="ct-root">
+    <div className="ct-root ds-root">
       <VideoBackground />
-      <style>{STYLE}</style>
+      {mobileOpen ? <div className="ds-sidebar-backdrop" onClick={() => setMobileOpen(false)} aria-hidden /> : null}
+      <Navbar onMenuClick={() => setMobileOpen((v) => !v)} title={viewTitle} />
       <div className="ct-shell">
-        {/* Sidebar */}
-        <aside className="ct-side">
+        <aside className={`ct-side ${mobileOpen ? "ct-side--open" : ""}`}>
           <div className="ct-brand">
             <BrandLogo variant="side" />
           </div>
@@ -848,7 +678,7 @@ export default function CopyTube() {
             ["library", FolderOpen, "Biblioteca"],
           ].map(([id, Ico, lbl]) => (
             <div key={id} className={`ct-nav ${view === id || (id === "library" && view === "results") ? "on" : ""}`}
-                 onClick={() => { setView(id); if (id !== "results") setActiveId(id === "library" ? activeId : null); }}>
+                 onClick={() => navTo(id)}>
               <Ico size={17} /> {lbl}
             </div>
           ))}
@@ -903,7 +733,7 @@ export default function CopyTube() {
           {view === "results" && !active && <div className="ct-empty">Selecione um projeto na biblioteca.</div>}
         </main>
       </div>
-      {toast && <div className="ct-toast"><Check size={15} style={{ color: "#2ed573" }} /> {toast}</div>}
+      {toast && <div className="ct-toast ds-toast ds-toast--success"><Check size={15} style={{ color: "var(--ds-success)" }} /> {toast}</div>}
     </div>
   );
 }
@@ -920,15 +750,15 @@ function Dashboard({ stats, onNew }) {
     <>
       <div className="ct-head">
         <div><h1 className="ct-h1">Dashboard</h1><p className="ct-sub">Sua central de produção de conteúdo com IA.</p></div>
-        <button className="ct-btn primary" onClick={onNew}><Plus size={16} /> Novo conteúdo</button>
+        <Button variant="primary" onClick={onNew}><Plus size={16} /> Novo conteúdo</Button>
       </div>
-      <div className="ct-grid" style={{ gridTemplateColumns: "repeat(4,1fr)" }}>
+      <div className="ct-grid ct-grid--stats" style={{ gridTemplateColumns: "repeat(4,1fr)" }}>
         {cards.map((c, i) => (
-          <div key={i} className="ct-card ct-stat">
+          <Card key={i} className="ct-stat" interactive>
             <div className="ct-ico">{c.ico}</div>
             <div className="ct-num">{c.num}</div>
             <div className="ct-lbl">{c.lbl}</div>
-          </div>
+          </Card>
         ))}
       </div>
     </>
@@ -998,8 +828,17 @@ function Generator({ onDone, ping }) {
 
   return (
     <>
-      <div className="ct-head"><div><h1 className="ct-h1">Gerar conteúdo</h1><p className="ct-sub">Descreva seu vídeo. A IA cria o resto.</p></div></div>
-      <div className="ct-card" style={{ maxWidth: 720 }}>
+      <div className="gen-hero">
+        <h1 className="ct-h1">Gerar conteúdo</h1>
+        <p className="ct-sub">Preencha o briefing do vídeo — roteiro, títulos, hashtags e descrições saem prontos para cada rede.</p>
+        <div className="gen-steps-hint">
+          <span>1. Título e tema</span>
+          <span>2. Público e objetivo</span>
+          <span>3. Escolha as redes</span>
+          <span>4. Gerar com IA</span>
+        </div>
+      </div>
+      <Card style={{ maxWidth: 720 }}>
         <div className="ct-field">
           <label><Tag size={14} /> Título do projeto</label>
           <input className="ct-input" value={f.titulo} onChange={(e) => set("titulo", e.target.value)} placeholder="Ex.: Guia completo para iniciantes" />
@@ -1044,11 +883,15 @@ function Generator({ onDone, ping }) {
             ))}
           </div>
         </div>
-        <button className="ct-btn primary" style={{ width: "100%", justifyContent: "center", marginTop: 6 }}
-                onClick={start} disabled={!f.titulo || !f.tema || f.plataformas.length === 0}>
+        <Button
+          variant="primary"
+          style={{ width: "100%", justifyContent: "center", marginTop: 6 }}
+          onClick={start}
+          disabled={!f.titulo || !f.tema || f.plataformas.length === 0}
+        >
           <Sparkles size={16} /> Gerar conteúdo
-        </button>
-      </div>
+        </Button>
+      </Card>
     </>
   );
 }
@@ -1059,15 +902,15 @@ function Library({ projects, onOpen, onDup, onDel, onNew }) {
     <>
       <div className="ct-head">
         <div><h1 className="ct-h1">Biblioteca</h1><p className="ct-sub">Todos os seus projetos, salvos e prontos para reuso.</p></div>
-        <button className="ct-btn primary" onClick={onNew}><Plus size={16} /> Novo conteúdo</button>
+        <Button variant="primary" onClick={onNew}><Plus size={16} /> Novo conteúdo</Button>
       </div>
       {projects.length === 0 ? (
-        <div className="ct-empty">
-          <div className="eico" style={{ background: "transparent", border: "none", width: "auto", height: "auto" }}>
-            <BrandLogo variant="mark" />
-          </div>
-          Nenhum projeto ainda. Gere seu primeiro conteúdo para começar.
-        </div>
+        <EmptyState
+          icon={<BrandLogo variant="mark" />}
+          title="Nenhum projeto ainda"
+          description="Gere seu primeiro conteúdo para começar a produzir para todas as redes."
+          action={<Button variant="primary" onClick={onNew}><Sparkles size={16} /> Criar primeiro conteúdo</Button>}
+        />
       ) : projects.map((p) => (
         <div key={p.id} className="ct-projrow">
           <div className="ct-projmeta" onClick={() => onOpen(p.id)} style={{ cursor: "pointer" }}>
